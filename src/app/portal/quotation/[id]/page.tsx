@@ -18,6 +18,7 @@ export default function CustomerPortalPage({ params }: { params: Promise<{ id: s
   const [counterDiscount, setCounterDiscount] = useState<number | ''>('')
   const [commentText, setCommentText] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isConfirming, setIsConfirming] = useState(false)
 
   const fetchQuote = async () => {
     setIsLoading(true)
@@ -52,7 +53,7 @@ export default function CustomerPortalPage({ params }: { params: Promise<{ id: s
       if (!res.ok) throw new Error('Failed to submit counter-proposal')
 
       const json = await res.json()
-      if (json.reenteredApproval) {
+      if (json.reRoutedForApproval) {
         alert('Counter-proposal submitted! As the discount exceeded ceiling limits, your quote has re-entered internal approval.')
       } else {
         alert('Counter-proposal submitted successfully!')
@@ -65,6 +66,28 @@ export default function CustomerPortalPage({ params }: { params: Promise<{ id: s
       alert(err.message)
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  const handleConfirmQuote = async () => {
+    if (!confirm('Are you sure you want to confirm and accept this quotation? This will move it to order fulfillment.')) return
+    setIsConfirming(true)
+    try {
+      const res = await fetch(`/api/quotations/${quotationId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'CONFIRMED' }),
+      })
+      if (!res.ok) {
+        const errJson = await res.json()
+        throw new Error(errJson.error || 'Failed to confirm quotation')
+      }
+      alert('Quotation confirmed! Your order is now moving to fulfillment.')
+      fetchQuote()
+    } catch (err: any) {
+      alert(err.message)
+    } finally {
+      setIsConfirming(false)
     }
   }
 
@@ -198,7 +221,7 @@ export default function CustomerPortalPage({ params }: { params: Promise<{ id: s
                 <Button variant="secondary" onClick={handleSendNegotiation} isLoading={isSubmitting}>
                   <MessageSquare size={14} /> Send Counter Request
                 </Button>
-                <Button variant="primary" onClick={() => alert('Quotation confirmed! Moving to order fulfillment.')}>
+                <Button variant="primary" onClick={handleConfirmQuote} isLoading={isConfirming}>
                   <CheckCircle2 size={14} /> Confirm & Accept Quote
                 </Button>
               </div>

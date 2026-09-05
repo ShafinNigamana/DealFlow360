@@ -14,8 +14,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const body = await req.json()
     const { action, reason } = body
 
-    if (!action || !['APPROVE', 'REJECT'].includes(action)) {
-      return NextResponse.json({ error: 'Action must be APPROVE or REJECT' }, { status: 400 })
+    if (!action || !['APPROVE', 'REJECT', 'RETURN'].includes(action)) {
+      return NextResponse.json({ error: 'Action must be APPROVE, REJECT, or RETURN' }, { status: 400 })
     }
 
     const approval = await prisma.approval.findUnique({
@@ -32,6 +32,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
 
     const isApprove = action === 'APPROVE'
+    const isReturn = action === 'RETURN'
 
     const updatedResult = await prisma.$transaction(async (tx) => {
       // 1. Update this approval entry
@@ -46,7 +47,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
       let finalQuotationStatus = approval.quotation.status
 
-      if (!isApprove) {
+      if (isReturn) {
+        // RETURN: Send back for revision — reset to DRAFT so rep can edit
+        finalQuotationStatus = QuotationStatus.DRAFT
+        await tx.quotation.update({
+          where: { id: approval.quotationId },
+          data: { status: QuotationStatus.DRAFT },
+        })
+      } else if (!isApprove) {
         // If rejected, reject the entire quotation
         finalQuotationStatus = QuotationStatus.REJECTED
         await tx.quotation.update({
@@ -77,7 +85,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           entityType: 'Quotation',
           entityId: approval.quotationId,
           userId: session.user.id,
-          action: isApprove ? 'APPROVAL_DECISION_APPROVED' : 'APPROVAL_DECISION_REJECTED',
+          action: isApprove ? 'APPROVAL_DECISION_APPROVED' : isReturn ? 'APPROVAL_DECISION_RETURNED' : 'APPROVAL_DECISION_REJECTED',
           reason: `Approver decision: ${action} (${approval.level}). ${reason || ''}`,
         },
         tx
@@ -87,7 +95,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     })
 
     return NextResponse.json({
-      message: `Approval request ${isApprove ? 'approved' : 'rejected'} successfully`,
+      message: `Approval request ${isApprove ? 'approved' : isReturn ? 'returned for revision' : 'rejected'} successfully`,
       approval: updatedResult.updatedApproval,
       quotationStatus: updatedResult.finalQuotationStatus,
     })

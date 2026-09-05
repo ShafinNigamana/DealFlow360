@@ -84,18 +84,23 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
             where: { quotationId },
             data: { unitDiscountPercent: counterDisc },
           })
-
           // Reset to DRAFT so routing engine can re-evaluate
           await tx.quotation.update({
             where: { id: quotationId },
             data: { status: QuotationStatus.DRAFT },
           })
 
+          // Find the rep to use as audit actor for portal-originated re-routes
+          const repUser = await tx.quotation.findUnique({
+            where: { id: quotationId },
+            select: { repId: true },
+          })
+
           await logAudit(
             {
               entityType: 'Quotation',
               entityId: quotationId,
-              userId: session.user.id,
+              userId: repUser?.repId || quotationId,
               action: 'COUNTER_PROPOSAL_REROUTED',
               reason: `Customer counter-proposal of ${counterDisc}% exceeds tier ceiling of ${maxTierDisc}%. Re-entering approval flow.`,
             },
@@ -103,8 +108,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           )
         })
 
-        // Re-submit through the approval routing engine
-        routingResult = await routeQuotationForApproval(quotationId, session.user.id)
+        // Re-submit through the approval routing engine using the quotation's rep
+        const repInfo = await prisma.quotation.findUnique({
+          where: { id: quotationId },
+          select: { repId: true },
+        })
+        routingResult = await routeQuotationForApproval(quotationId, repInfo?.repId || quotationId)
         reRoutedForApproval = true
       }
     }

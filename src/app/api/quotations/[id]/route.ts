@@ -44,7 +44,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   }
 }
 
-// PATCH /api/quotations/[id] — Update quotation customer
+// PATCH /api/quotations/[id] — Update quotation (customer, status transitions)
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { errorResponse } = await requireAuth()
   if (errorResponse) return errorResponse
@@ -58,12 +58,37 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       return NextResponse.json({ error: 'Quotation not found' }, { status: 404 })
     }
 
-    if (quotation.status !== 'DRAFT') {
-      return NextResponse.json({ error: `Cannot edit quotation in ${quotation.status} status` }, { status: 400 })
+    const updateData: any = {}
+
+    // Status transitions (e.g., customer confirms an APPROVED quote)
+    if (body.status !== undefined) {
+      const allowedTransitions: Record<string, string[]> = {
+        APPROVED: ['CONFIRMED'],
+        CONFIRMED: ['FULFILLED'],
+        DRAFT: ['CANCELLED'],
+        SENT: ['CANCELLED'],
+      }
+      const allowed = allowedTransitions[quotation.status] || []
+      if (!allowed.includes(body.status)) {
+        return NextResponse.json(
+          { error: `Cannot transition quotation from ${quotation.status} to ${body.status}` },
+          { status: 400 }
+        )
+      }
+      updateData.status = body.status
     }
 
-    const updateData: any = {}
-    if (body.customerId !== undefined) updateData.customerId = body.customerId
+    // Structural field edits only allowed in DRAFT
+    if (body.customerId !== undefined) {
+      if (quotation.status !== 'DRAFT') {
+        return NextResponse.json({ error: `Cannot edit quotation in ${quotation.status} status` }, { status: 400 })
+      }
+      updateData.customerId = body.customerId
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 })
+    }
 
     const updated = await prisma.quotation.update({
       where: { id },
