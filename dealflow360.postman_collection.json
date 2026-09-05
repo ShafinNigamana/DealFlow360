@@ -12,6 +12,17 @@
 			"type": "string"
 		}
 	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"pm.request.headers.add({key: 'x-user-email', value: pm.environment.get('adminEmail') || 'admin@dealflow360.com'});"
+				]
+			}
+		}
+	],
 	"item": [
 		{
 			"name": "1. Analytics & Health",
