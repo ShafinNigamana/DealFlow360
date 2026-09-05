@@ -1,0 +1,542 @@
+// DealFlow360 — Prisma Schema
+// All 27 entities from ARCHITECTURE.md
+// Owner: Backend (Shafin) — coordinate changes with frontend teammate
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ──────────────────────────────────────────────
+// Enums
+// ──────────────────────────────────────────────
+
+enum UserRole {
+  REP
+  MANAGER
+  FINANCE
+  ADMIN
+}
+
+enum QuotationStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  SENT
+  CONFIRMED
+  FULFILLED
+  CANCELLED
+}
+
+enum ApprovalLevel {
+  MANAGER
+  MANAGER_THEN_FINANCE
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum SubscriptionCadence {
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAUSED
+  CANCELLED
+  EXPIRED
+}
+
+enum BillingEntryStatus {
+  PENDING
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum BackorderStatus {
+  PENDING
+  PARTIALLY_FULFILLED
+  FULFILLED
+  CANCELLED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum DealAlertType {
+  STALLED
+  ANOMALY
+  SLIPPAGE
+}
+
+enum DealAlertStatus {
+  OPEN
+  ACKNOWLEDGED
+  ESCALATED
+}
+
+enum NegotiationAuthorType {
+  REP
+  CUSTOMER
+  MANAGER
+}
+
+// ──────────────────────────────────────────────
+// Identity & Access (3 models)
+// ──────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         UserRole
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  quotationsAsRep Quotation[] @relation("RepQuotations")
+  approvals       Approval[]  @relation("ApproverApprovals")
+  auditLogs       AuditLog[]  @relation("UserAuditLogs")
+
+  @@map("users")
+}
+
+model Customer {
+  id           String  @id @default(cuid())
+  name         String
+  email        String  @unique
+  passwordHash String? @map("password_hash")
+
+  tierId String?       @map("tier_id")
+  tier   CustomerTier? @relation(fields: [tierId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  quotations Quotation[]
+
+  @@map("customers")
+}
+
+model CustomerTier {
+  id   String @id @default(cuid())
+  name String @unique
+
+  // Relations
+  customers            Customer[]
+  tierDiscountCeilings TierDiscountCeiling[]
+  priceLists           PriceList[]
+
+  @@map("customer_tiers")
+}
+
+// ──────────────────────────────────────────────
+// Catalog & Pricing (4 models)
+// ──────────────────────────────────────────────
+
+model Category {
+  id   String @id @default(cuid())
+  name String @unique
+
+  // Relations
+  products                 Product[]
+  categoryDiscountCeilings CategoryDiscountCeiling[]
+
+  @@map("categories")
+}
+
+model Product {
+  id          String  @id @default(cuid())
+  name        String
+  categoryId  String  @map("category_id")
+  basePrice   Decimal @map("base_price") @db.Decimal(12, 2)
+  unit        String  @default("unit")
+  taxRate     Decimal @default(0) @map("tax_rate") @db.Decimal(5, 2)
+  description String?
+
+  category Category @relation(fields: [categoryId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  variants        ProductVariant[]
+  priceLists      PriceList[]
+  warehouseStocks WarehouseStock[]
+  quotationLines  QuotationLine[]
+  upsellsAsSource UpsellRule[]     @relation("SourceProduct")
+  upsellsAsSugg   UpsellRule[]     @relation("SuggestedProduct")
+
+  @@map("products")
+}
+
+model ProductVariant {
+  id            String  @id @default(cuid())
+  productId     String  @map("product_id")
+  attributeName String  @map("attribute_name")
+  value         String
+  extraPrice    Decimal @default(0) @map("extra_price") @db.Decimal(12, 2)
+
+  product Product @relation(fields: [productId], references: [id])
+
+  // Relations
+  quotationLines QuotationLine[]
+
+  @@map("product_variants")
+}
+
+model PriceList {
+  id        String  @id @default(cuid())
+  productId String  @map("product_id")
+  tierId    String  @map("tier_id")
+  currency  String  @default("USD")
+  price     Decimal @db.Decimal(12, 2)
+
+  product Product      @relation(fields: [productId], references: [id])
+  tier    CustomerTier @relation(fields: [tierId], references: [id])
+
+  @@unique([productId, tierId, currency])
+  @@map("price_lists")
+}
+
+// ──────────────────────────────────────────────
+// Discount & Approval Governance (3 models)
+// ──────────────────────────────────────────────
+
+model TierDiscountCeiling {
+  id                 String  @id @default(cuid())
+  tierId             String  @map("tier_id")
+  maxDiscountPercent Decimal @map("max_discount_percent") @db.Decimal(5, 2)
+
+  tier CustomerTier @relation(fields: [tierId], references: [id])
+
+  @@unique([tierId])
+  @@map("tier_discount_ceilings")
+}
+
+model CategoryDiscountCeiling {
+  id                 String  @id @default(cuid())
+  categoryId         String  @map("category_id")
+  maxDiscountPercent Decimal @map("max_discount_percent") @db.Decimal(5, 2)
+
+  category Category @relation(fields: [categoryId], references: [id])
+
+  @@unique([categoryId])
+  @@map("category_discount_ceilings")
+}
+
+model ApprovalChainConfig {
+  id                 String        @id @default(cuid())
+  minDiscountPercent Decimal       @map("min_discount_percent") @db.Decimal(5, 2)
+  maxDiscountPercent Decimal       @map("max_discount_percent") @db.Decimal(5, 2)
+  requiredLevel      ApprovalLevel @map("required_level")
+
+  @@map("approval_chain_configs")
+}
+
+// ──────────────────────────────────────────────
+// Warehouse & Fulfillment (4 models)
+// ──────────────────────────────────────────────
+
+model Warehouse {
+  id                 String  @id @default(cuid())
+  name               String  @unique
+  shippingCostWeight Decimal @map("shipping_cost_weight") @db.Decimal(5, 2)
+
+  // Relations
+  stocks          WarehouseStock[]
+  warehouseSplits WarehouseSplit[]
+
+  @@map("warehouses")
+}
+
+model WarehouseStock {
+  id                     String @id @default(cuid())
+  warehouseId            String @map("warehouse_id")
+  productId              String @map("product_id")
+  quantity               Int
+  replenishmentThreshold Int    @default(0) @map("replenishment_threshold")
+
+  warehouse Warehouse @relation(fields: [warehouseId], references: [id])
+  product   Product   @relation(fields: [productId], references: [id])
+
+  @@unique([warehouseId, productId])
+  @@map("warehouse_stocks")
+}
+
+model WarehouseSplit {
+  id                    String  @id @default(cuid())
+  quotationId           String  @map("quotation_id")
+  warehouseId           String  @map("warehouse_id")
+  quantity              Int
+  estimatedShipmentCost Decimal @default(0) @map("estimated_shipment_cost") @db.Decimal(12, 2)
+
+  quotation  Quotation  @relation(fields: [quotationId], references: [id])
+  warehouse  Warehouse  @relation(fields: [warehouseId], references: [id])
+
+  // Relations
+  backorders Backorder[]
+
+  @@map("warehouse_splits")
+}
+
+model Backorder {
+  id                String          @id @default(cuid())
+  warehouseSplitId  String          @map("warehouse_split_id")
+  quantityRemaining Int             @map("quantity_remaining")
+  status            BackorderStatus @default(PENDING)
+
+  warehouseSplit WarehouseSplit @relation(fields: [warehouseSplitId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("backorders")
+}
+
+// ──────────────────────────────────────────────
+// Subscriptions & Billing (4 models)
+// ──────────────────────────────────────────────
+
+model SubscriptionPlan {
+  id               String             @id @default(cuid())
+  name             String             @unique
+  cadence          SubscriptionCadence
+  prorationRule    String             @default("prorate") @map("proration_rule")
+  cancellationRule String             @default("end_of_period") @map("cancellation_rule")
+
+  // Relations
+  subscriptions  Subscription[]
+  quotationLines QuotationLine[]
+
+  @@map("subscription_plans")
+}
+
+model Subscription {
+  id              String             @id @default(cuid())
+  quotationLineId String             @unique @map("quotation_line_id")
+  planId          String             @map("plan_id")
+  status          SubscriptionStatus @default(ACTIVE)
+  startDate       DateTime           @map("start_date")
+
+  quotationLine QuotationLine @relation(fields: [quotationLineId], references: [id])
+  plan          SubscriptionPlan @relation(fields: [planId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  billingEntries BillingScheduleEntry[]
+  creditNotes    CreditNote[]
+
+  @@map("subscriptions")
+}
+
+model BillingScheduleEntry {
+  id             String             @id @default(cuid())
+  subscriptionId String             @map("subscription_id")
+  dueDate        DateTime           @map("due_date")
+  amount         Decimal            @db.Decimal(12, 2)
+  status         BillingEntryStatus @default(PENDING)
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id])
+
+  @@index([subscriptionId, dueDate])
+  @@map("billing_schedule_entries")
+}
+
+model CreditNote {
+  id             String   @id @default(cuid())
+  subscriptionId String   @map("subscription_id")
+  amount         Decimal  @db.Decimal(12, 2)
+  reason         String
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id])
+
+  @@map("credit_notes")
+}
+
+// ──────────────────────────────────────────────
+// Upsell (1 model)
+// ──────────────────────────────────────────────
+
+model UpsellRule {
+  id                  String  @id @default(cuid())
+  sourceProductId     String  @map("source_product_id")
+  suggestedProductId  String  @map("suggested_product_id")
+  isPromoted          Boolean @default(false) @map("is_promoted")
+  minMarginThreshold  Decimal @default(0) @map("min_margin_threshold") @db.Decimal(5, 2)
+
+  sourceProduct    Product @relation("SourceProduct", fields: [sourceProductId], references: [id])
+  suggestedProduct Product @relation("SuggestedProduct", fields: [suggestedProductId], references: [id])
+
+  @@unique([sourceProductId, suggestedProductId])
+  @@map("upsell_rules")
+}
+
+// ──────────────────────────────────────────────
+// Quotation Core (5 models)
+// ──────────────────────────────────────────────
+
+model Quotation {
+  id               String          @id @default(cuid())
+  customerId       String          @map("customer_id")
+  repId            String          @map("rep_id")
+  status           QuotationStatus @default(DRAFT)
+  blendedRiskScore Decimal         @default(0) @map("blended_risk_score") @db.Decimal(5, 2)
+  createdAt        DateTime        @default(now()) @map("created_at")
+  updatedAt        DateTime        @updatedAt @map("updated_at")
+
+  customer Customer @relation(fields: [customerId], references: [id])
+  rep      User     @relation("RepQuotations", fields: [repId], references: [id])
+
+  // Relations
+  lines               QuotationLine[]
+  approvals            Approval[]
+  negotiationComments  NegotiationComment[]
+  warehouseSplits      WarehouseSplit[]
+  invoices             Invoice[]
+  dealAlerts           DealAlert[]
+
+  @@index([status])
+  @@index([repId])
+  @@index([customerId])
+  @@map("quotations")
+}
+
+model QuotationLine {
+  id                 String  @id @default(cuid())
+  quotationId        String  @map("quotation_id")
+  productId          String  @map("product_id")
+  variantId          String? @map("variant_id")
+  quantity           Int
+  unitDiscountPercent Decimal @default(0) @map("unit_discount_percent") @db.Decimal(5, 2)
+  subscriptionPlanId String? @map("subscription_plan_id")
+  lineTotal          Decimal @default(0) @map("line_total") @db.Decimal(12, 2)
+  margin             Decimal @default(0) @db.Decimal(12, 2)
+
+  quotation        Quotation         @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  product          Product           @relation(fields: [productId], references: [id])
+  variant          ProductVariant?   @relation(fields: [variantId], references: [id])
+  subscriptionPlan SubscriptionPlan? @relation(fields: [subscriptionPlanId], references: [id])
+
+  // Relations
+  subscription Subscription?
+
+  @@index([quotationId])
+  @@map("quotation_lines")
+}
+
+model Approval {
+  id          String         @id @default(cuid())
+  quotationId String         @map("quotation_id")
+  level       ApprovalLevel
+  approverId  String         @map("approver_id")
+  status      ApprovalStatus @default(PENDING)
+  reason      String?
+  createdAt   DateTime       @default(now()) @map("created_at")
+
+  quotation Quotation @relation(fields: [quotationId], references: [id])
+  approver  User      @relation("ApproverApprovals", fields: [approverId], references: [id])
+
+  @@index([quotationId])
+  @@map("approvals")
+}
+
+/// Insert-only — never update or delete rows in this table.
+/// See ARCHITECTURE.md §2 and DECISIONS.md §8.
+model AuditLog {
+  id         String   @id @default(cuid())
+  entityType String   @map("entity_type")
+  entityId   String   @map("entity_id")
+  userId     String   @map("user_id")
+  action     String
+  reason     String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user User @relation("UserAuditLogs", fields: [userId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@map("audit_logs")
+}
+
+model NegotiationComment {
+  id                    String                @id @default(cuid())
+  quotationId           String                @map("quotation_id")
+  authorType            NegotiationAuthorType @map("author_type")
+  comment               String
+  counterDiscountPercent Decimal?             @map("counter_discount_percent") @db.Decimal(5, 2)
+  createdAt             DateTime              @default(now()) @map("created_at")
+
+  quotation Quotation @relation(fields: [quotationId], references: [id])
+
+  @@index([quotationId])
+  @@map("negotiation_comments")
+}
+
+// ──────────────────────────────────────────────
+// Billing & Alerts (3 models)
+// ──────────────────────────────────────────────
+
+model Invoice {
+  id          String        @id @default(cuid())
+  quotationId String        @map("quotation_id")
+  amount      Decimal       @db.Decimal(12, 2)
+  status      InvoiceStatus @default(DRAFT)
+
+  quotation Quotation @relation(fields: [quotationId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  payments Payment[]
+
+  @@map("invoices")
+}
+
+model Payment {
+  id        String   @id @default(cuid())
+  invoiceId String   @map("invoice_id")
+  amount    Decimal  @db.Decimal(12, 2)
+  method    String
+  paidAt    DateTime @map("paid_at")
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id])
+
+  @@map("payments")
+}
+
+model DealAlert {
+  id          String          @id @default(cuid())
+  quotationId String          @map("quotation_id")
+  type        DealAlertType
+  status      DealAlertStatus @default(OPEN)
+  createdAt   DateTime        @default(now()) @map("created_at")
+
+  quotation Quotation @relation(fields: [quotationId], references: [id])
+
+  @@index([quotationId])
+  @@index([status])
+  @@map("deal_alerts")
+}
