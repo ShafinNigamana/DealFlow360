@@ -1,0 +1,248 @@
+{
+	"info": {
+		"_postman_id": "dealflow360-api-collection",
+		"name": "DealFlow360 API Suite",
+		"description": "Comprehensive Postman test collection for DealFlow360 B2B Sales Operations Platform.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "1. Analytics & Health",
+			"item": [
+				{
+					"name": "Get Dashboard KPIs",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/dashboard",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "dashboard"]
+						}
+					}
+				},
+				{
+					"name": "Get Deal Health Alerts",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/deal-alerts",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "deal-alerts"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "2. Catalog & Pricing",
+			"item": [
+				{
+					"name": "List Categories",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/categories",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "categories"]
+						}
+					}
+				},
+				{
+					"name": "List Products",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/products",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products"]
+						}
+					}
+				},
+				{
+					"name": "List Customer Tiers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/customer-tiers",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "customer-tiers"]
+						}
+					}
+				},
+				{
+					"name": "List Customers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/customers",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "customers"]
+						}
+					}
+				},
+				{
+					"name": "List Tier Discount Ceilings",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/discount-ceilings/tier",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "discount-ceilings", "tier"]
+						}
+					}
+				},
+				{
+					"name": "List Category Discount Ceilings",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/discount-ceilings/category",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "discount-ceilings", "category"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "3. Quotation Engine",
+			"item": [
+				{
+					"name": "List Quotations",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/quotations",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "quotations"]
+						}
+					}
+				},
+				{
+					"name": "Create Draft Quotation",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"customerId\": \"REPLACE_WITH_CUSTOMER_ID\",\n  \"repId\": \"REPLACE_WITH_USER_REP_ID\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/quotations",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "quotations"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "4. Warehouse & Fulfillment",
+			"item": [
+				{
+					"name": "List Warehouses",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/warehouses",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "warehouses"]
+						}
+					}
+				},
+				{
+					"name": "List Backorders",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/backorders",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "backorders"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "5. Subscriptions & Billing",
+			"item": [
+				{
+					"name": "List Subscription Plans",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/subscription-plans",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "subscription-plans"]
+						}
+					}
+				},
+				{
+					"name": "List Subscriptions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/subscriptions",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "subscriptions"]
+						}
+					}
+				},
+				{
+					"name": "List Invoices",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/invoices",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "invoices"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "6. Approvals & Governance",
+			"item": [
+				{
+					"name": "List Approval Chains",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/approval-chains",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "approval-chains"]
+						}
+					}
+				}
+			]
+		}
+	]
+}
