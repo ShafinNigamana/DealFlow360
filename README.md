@@ -43,50 +43,80 @@ two devs, layer-split for MVP:
 ## 📍 where we're at
 
 ```
-[■□□□□□□□□□] just getting started
+[█████████░] Backend 100% Complete · Ready for Frontend Integration
 ```
 
-we're currently:
-- ✅ project scaffolded (Next.js + TS + Prisma)
-- ✅ prisma schema designed (27 models, all relationships mapped)
-- 🔄 wiring up auth + first API routes
-- ⬜ quotation builder flow
-- ⬜ approval routing engine
-- ⬜ warehouse split algorithm
-- ⬜ billing + subscriptions
-- ⬜ customer portal
-- ⬜ deal health dashboard
+- ✅ **Project Scaffolding**: Next.js 16 + TypeScript + Prisma 5
+- ✅ **Database Architecture**: 27 models mapped, relational integrity, initial migration applied
+- ✅ **Database Seeding**: Demo accounts (Admin, Rep, Manager, Finance), categories, products, customer tiers, warehouse stock
+- ✅ **Authentication & RBAC**: Auth.js v5 Credentials Provider, JWT session callbacks, strict `withAuth` route guard
+- ✅ **Quotation Engine**: CRUD, dynamic line item totals, currency precision, auto risk-score recalculation
+- ✅ **Discount Governance**: Tier ceilings, category ceilings, blended deal risk score (0–100)
+- ✅ **Multi-Level Approval Routing**: Dynamic level routing (Rep → Manager → VP → CEO), append-only audit trail
+- ✅ **Warehouse Fulfillment Split**: Stock-aware split algorithm with shipping cost weighting & backorders
+- ✅ **Hybrid Subscriptions & Billing**: One-time + recurring lines, schedule generator, mid-cycle proration engine
+- ✅ **Negotiations & Upsell**: Customer portal counter-proposals with threshold-driven re-approval, rule-based cross-sell/upsell
+- ✅ **Deal Health & Dashboard**: Stalled deals, discount anomaly detection, executive dashboard KPIs
+- 🔄 **Frontend Connection**: API routes ready to consume with full TypeScript contracts
+
+---
+
+## 🔌 API Endpoints Summary
+
+| Module | Endpoints | Description |
+|---|---|---|
+| **Auth** | `POST /api/auth/[...nextauth]` | Session login, JWT issuance, current session |
+| **Catalog** | `/api/categories`, `/api/products`, `/api/products/[id]/variants` | Product catalog & variant management |
+| **Pricing & Governance** | `/api/customer-tiers`, `/api/customers`, `/api/price-lists`, `/api/discount-ceilings/*` | Tier & category discount policies |
+| **Quotations** | `/api/quotations`, `/api/quotations/[id]/lines`, `/api/quotations/[id]/submit` | Full quote builder & submission workflow |
+| **Approvals** | `/api/approval-chains`, `/api/approvals/[id]/decide`, `/api/quotations/[id]/approvals` | Multi-level approval sign-off & audit log |
+| **Fulfillment** | `/api/warehouses`, `/api/warehouses/[id]/stock`, `/api/quotations/[id]/warehouse-split`, `/api/backorders` | Multi-warehouse routing & backorder tracking |
+| **Billing** | `/api/subscription-plans`, `/api/subscriptions`, `/api/billing-entries`, `/api/invoices`, `/api/payments` | Subscriptions, prorated invoicing, credit notes |
+| **Growth & Analytics** | `/api/upsell-rules`, `/api/quotations/[id]/upsell-suggestions`, `/api/quotations/[id]/negotiations`, `/api/deal-alerts`, `/api/dashboard` | Upsells, counter-proposals, deal health KPIs |
+
+---
 
 ## 🚦 getting started
 
 ```bash
-# install deps
+# 1. install dependencies
 npm install
 
-# set up your .env (copy from .env.example when it exists)
-# DATABASE_URL="postgresql://user:pass@localhost:5432/dealflow360_dev"
+# 2. launch postgresql (docker)
+docker run --name dealflow-postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=dealflow360_dev -p 5433:5432 -d postgres:16
 
-# run prisma migrations (once DB is ready)
-npx prisma migrate dev
+# 3. set up your .env
+DATABASE_URL="postgresql://postgres:postgres@localhost:5433/dealflow360_dev"
+AUTH_SECRET="super-secret-random-key-dealflow360-hackathon"
+NEXTAUTH_URL="http://localhost:3000"
 
-# start dev server
+# 4. run prisma migrations
+npx prisma migrate dev --name init
+
+# 5. seed demo data
+npm run db:seed
+
+# 6. start development server
 npm run dev
+
+# 7. (optional) open database viewer
+npx prisma studio
 ```
+
+### 👤 Demo Credentials
+All seeded users share the password: `Password123!`
+- **Admin**: `admin@dealflow360.com` (Role: `ADMIN`)
+- **Sales Rep**: `rep@dealflow360.com` (Role: `SALES_REP`)
+- **Manager**: `manager@dealflow360.com` (Role: `SALES_MANAGER`)
+- **Finance**: `finance@dealflow360.com` (Role: `FINANCE`)
+
+---
 
 ## 📝 docs
 
 - [`PRD.md`](./md%20document%20files/PRD.md) — product requirements
 - [`ARCHITECTURE.md`](./md%20document%20files/ARCHITECTURE.md) — stack, data model, architectural decisions
 - [`DECISIONS_AND_REASONING.md`](./md%20document%20files/DECISIONS_AND_REASONING.md) — every technical decision defended
-
-## 🧪 what we'd build next
-
-if we had more time:
-- multi-currency conversion logic
-- full accounting system (invoice/payment is lightweight rn)
-- OAuth providers (Google, GitHub)
-- real-time notifications (WebSocket)
-- PDF quotation generation
 
 ---
 
