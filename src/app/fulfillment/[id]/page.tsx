@@ -81,9 +81,15 @@ export default function FulfillmentDetailPage({ params }: { params: Promise<{ id
               </p>
             </div>
 
-            <Button variant="primary" onClick={handleCalculateSplit} isLoading={isExecuting}>
-              <Truck size={14} /> Calculate & Execute Warehouse Split
-            </Button>
+            {order?.status === 'FULFILLED' ? (
+              <Button variant="secondary" disabled style={{ opacity: 0.8, cursor: 'default', backgroundColor: '#F4F4F5' }}>
+                <Check size={14} color="#16A34A" /> Fulfillment Completed
+              </Button>
+            ) : (
+              <Button variant="primary" onClick={handleCalculateSplit} isLoading={isExecuting}>
+                <Truck size={14} /> Calculate & Execute Warehouse Split
+              </Button>
+            )}
           </div>
         </Card>
 

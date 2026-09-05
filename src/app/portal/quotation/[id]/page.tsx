@@ -194,40 +194,68 @@ export default function CustomerPortalPage({ params }: { params: Promise<{ id: s
             )}
           </div>
 
-          {/* Proposal Input Form */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', borderTop: '1px solid #E4E4E7', paddingTop: '16px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '12px' }}>
-              <Input
-                label="Requested Counter Discount (%)"
-                type="number"
-                placeholder="e.g. 20"
-                value={counterDiscount}
-                onChange={(e) => setCounterDiscount(e.target.value !== '' ? Number(e.target.value) : '')}
-              />
-              <Input
-                label="Message / Note"
-                placeholder="e.g. Can we request a 20% discount on the hardware lines?"
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-              />
+          {/* Proposal Input Form / Accepted State */}
+          {quote?.status === 'CONFIRMED' || quote?.status === 'FULFILLED' ? (
+            <div
+              style={{
+                marginTop: '16px',
+                padding: '16px',
+                backgroundColor: '#F0FDF4',
+                border: '1px solid #BBF7D0',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <CheckCircle2 size={20} color="#16A34A" />
+                <div>
+                  <div style={{ fontSize: '14px', fontWeight: 600, color: '#166534' }}>
+                    Quotation Confirmed & Accepted
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#15803D' }}>
+                    This proposal is confirmed. Order fulfillment and invoicing are underway.
+                  </div>
+                </div>
+              </div>
+              <Badge variant="success">Confirmed Order</Badge>
             </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ fontSize: '11px', color: '#71717A', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <ShieldAlert size={14} color="#4338CA" />
-                Counter-proposals exceeding discount ceilings automatically re-trigger manager approval.
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', borderTop: '1px solid #E4E4E7', paddingTop: '16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '12px' }}>
+                <Input
+                  label="Requested Counter Discount (%)"
+                  type="number"
+                  placeholder="e.g. 20"
+                  value={counterDiscount}
+                  onChange={(e) => setCounterDiscount(e.target.value !== '' ? Number(e.target.value) : '')}
+                />
+                <Input
+                  label="Message / Note"
+                  placeholder="e.g. Can we request a 20% discount on the hardware lines?"
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                />
               </div>
 
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <Button variant="secondary" onClick={handleSendNegotiation} isLoading={isSubmitting}>
-                  <MessageSquare size={14} /> Send Counter Request
-                </Button>
-                <Button variant="primary" onClick={handleConfirmQuote} isLoading={isConfirming}>
-                  <CheckCircle2 size={14} /> Confirm & Accept Quote
-                </Button>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ fontSize: '11px', color: '#71717A', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <ShieldAlert size={14} color="#4338CA" />
+                  Counter-proposals exceeding discount ceilings automatically re-trigger manager approval.
+                </div>
+
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <Button variant="secondary" onClick={handleSendNegotiation} isLoading={isSubmitting}>
+                    <MessageSquare size={14} /> Send Counter Request
+                  </Button>
+                  <Button variant="primary" onClick={handleConfirmQuote} isLoading={isConfirming}>
+                    <CheckCircle2 size={14} /> Confirm & Accept Quote
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </Card>
       </div>
     </PortalShell>
