@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "dealflow360-api-collection",
 		"name": "DealFlow360 API Suite",
-		"description": "Comprehensive Postman test collection for DealFlow360 B2B Sales Operations Platform.",
+		"description": "Comprehensive Postman test collection for DealFlow360 B2B Sales Operations Platform with full CRUD & Action Endpoints.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"variable": [
@@ -69,10 +69,46 @@
 					}
 				},
 				{
+					"name": "Create Category",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Cloud Infrastructure\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/categories",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "categories"]
+						}
+					}
+				},
+				{
 					"name": "List Products",
 					"request": {
 						"method": "GET",
 						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/products",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products"]
+						}
+					}
+				},
+				{
+					"name": "Create Product",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"DevOps Automation Hub\",\n  \"categoryId\": \"REPLACE_WITH_CATEGORY_ID\",\n  \"basePrice\": 1800.00,\n  \"taxRate\": 10.0,\n  \"unit\": \"license\",\n  \"description\": \"Full CI/CD pipeline and monitoring suite\"\n}"
+						},
 						"url": {
 							"raw": "{{baseUrl}}/api/products",
 							"host": ["{{baseUrl}}"],
@@ -97,6 +133,24 @@
 					"request": {
 						"method": "GET",
 						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/customers",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "customers"]
+						}
+					}
+				},
+				{
+					"name": "Create Customer",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"NovaTech Enterprises\",\n  \"email\": \"procurement@novatech.io\",\n  \"tierId\": \"REPLACE_WITH_TIER_ID\"\n}"
+						},
 						"url": {
 							"raw": "{{baseUrl}}/api/customers",
 							"host": ["{{baseUrl}}"],
@@ -131,7 +185,7 @@
 			]
 		},
 		{
-			"name": "3. Quotation Engine",
+			"name": "3. Quotation Engine (Full Workflow)",
 			"item": [
 				{
 					"name": "List Quotations",
@@ -146,18 +200,15 @@
 					}
 				},
 				{
-					"name": "Create Draft Quotation",
+					"name": "1. Create Draft Quotation",
 					"request": {
 						"method": "POST",
 						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
+							{ "key": "Content-Type", "value": "application/json" }
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"customerId\": \"REPLACE_WITH_CUSTOMER_ID\",\n  \"repId\": \"REPLACE_WITH_USER_REP_ID\"\n}"
+							"raw": "{\n  \"customerId\": \"REPLACE_WITH_CUSTOMER_ID\",\n  \"repId\": \"REPLACE_WITH_REP_USER_ID\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/quotations",
@@ -165,11 +216,106 @@
 							"path": ["api", "quotations"]
 						}
 					}
+				},
+				{
+					"name": "2. Add Line Item to Quotation",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"productId\": \"REPLACE_WITH_PRODUCT_ID\",\n  \"quantity\": 5,\n  \"unitDiscountPercent\": 15.0\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/quotations/{{quotationId}}/lines",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "quotations", "{{quotationId}}", "lines"]
+						}
+					}
+				},
+				{
+					"name": "3. Get Quotation Details & Totals",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/quotations/{{quotationId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "quotations", "{{quotationId}}"]
+						}
+					}
+				},
+				{
+					"name": "4. Submit Quotation for Approval",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"reason\": \"Volume enterprise purchase with 15% line discount\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/quotations/{{quotationId}}/submit",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "quotations", "{{quotationId}}", "submit"]
+						}
+					}
 				}
 			]
 		},
 		{
-			"name": "4. Warehouse & Fulfillment",
+			"name": "4. Approvals & Governance",
+			"item": [
+				{
+					"name": "List Approval Chains",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/approval-chains",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "approval-chains"]
+						}
+					}
+				},
+				{
+					"name": "Get Quotation Approval Requests",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/quotations/{{quotationId}}/approvals",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "quotations", "{{quotationId}}", "approvals"]
+						}
+					}
+				},
+				{
+					"name": "Decide on Approval (Approve / Reject)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"APPROVED\",\n  \"reason\": \"Discount authorized based on quarterly quota\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/approvals/REPLACE_WITH_APPROVAL_ID/decide",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "approvals", "REPLACE_WITH_APPROVAL_ID", "decide"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "5. Warehouse & Multi-Fulfillment",
 			"item": [
 				{
 					"name": "List Warehouses",
@@ -180,6 +326,42 @@
 							"raw": "{{baseUrl}}/api/warehouses",
 							"host": ["{{baseUrl}}"],
 							"path": ["api", "warehouses"]
+						}
+					}
+				},
+				{
+					"name": "Create Warehouse",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Warehouse Gamma (EU Central)\",\n  \"shippingCostWeight\": 1.4\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/warehouses",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "warehouses"]
+						}
+					}
+				},
+				{
+					"name": "Calculate & Execute Warehouse Split",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/quotations/{{quotationId}}/warehouse-split",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "quotations", "{{quotationId}}", "warehouse-split"]
 						}
 					}
 				},
@@ -198,13 +380,31 @@
 			]
 		},
 		{
-			"name": "5. Subscriptions & Billing",
+			"name": "6. Subscriptions & Billing",
 			"item": [
 				{
 					"name": "List Subscription Plans",
 					"request": {
 						"method": "GET",
 						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/subscription-plans",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "subscription-plans"]
+						}
+					}
+				},
+				{
+					"name": "Create Subscription Plan",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Enterprise SaaS Yearly\",\n  \"cadence\": \"YEARLY\",\n  \"prorationRule\": \"prorate\",\n  \"cancellationRule\": \"end_of_period\"\n}"
+						},
 						"url": {
 							"raw": "{{baseUrl}}/api/subscription-plans",
 							"host": ["{{baseUrl}}"],
@@ -235,21 +435,93 @@
 							"path": ["api", "invoices"]
 						}
 					}
+				},
+				{
+					"name": "Create Invoice",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"quotationId\": \"{{quotationId}}\",\n  \"amount\": 4500.00\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/invoices",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "invoices"]
+						}
+					}
+				},
+				{
+					"name": "Record Payment for Invoice",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"invoiceId\": \"REPLACE_WITH_INVOICE_ID\",\n  \"amount\": 4500.00,\n  \"method\": \"WIRE_TRANSFER\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/payments",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "payments"]
+						}
+					}
 				}
 			]
 		},
 		{
-			"name": "6. Approvals & Governance",
+			"name": "7. Customer Negotiations & Upsells",
 			"item": [
 				{
-					"name": "List Approval Chains",
+					"name": "Submit Counter-Proposal Negotiation",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"authorType\": \"CUSTOMER\",\n  \"comment\": \"Can we get a 20% discount if we sign for a 3-year term?\",\n  \"counterDiscountPercent\": 20.0\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/quotations/{{quotationId}}/negotiations",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "quotations", "{{quotationId}}", "negotiations"]
+						}
+					}
+				},
+				{
+					"name": "Get Upsell Suggestions for Quotation",
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/api/approval-chains",
+							"raw": "{{baseUrl}}/api/quotations/{{quotationId}}/upsell-suggestions",
 							"host": ["{{baseUrl}}"],
-							"path": ["api", "approval-chains"]
+							"path": ["api", "quotations", "{{quotationId}}", "upsell-suggestions"]
+						}
+					}
+				},
+				{
+					"name": "Create Upsell Rule",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"sourceProductId\": \"REPLACE_WITH_SOURCE_PRODUCT_ID\",\n  \"suggestedProductId\": \"REPLACE_WITH_SUGGESTED_PRODUCT_ID\",\n  \"isPromoted\": true,\n  \"minMarginThreshold\": 25.0\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/upsell-rules",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "upsell-rules"]
 						}
 					}
 				}
