@@ -43,6 +43,7 @@ export default function CustomerPortalPage({ params }: { params: Promise<{ id: s
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          authorType: 'CUSTOMER',
           comment: commentText,
           counterDiscountPercent: counterDiscount !== '' ? Number(counterDiscount) : undefined,
         }),

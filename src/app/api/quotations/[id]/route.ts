@@ -4,9 +4,6 @@ import { NextResponse } from 'next/server'
 
 // GET /api/quotations/[id] — Fetch single quotation with full details
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { errorResponse } = await requireAuth()
-  if (errorResponse) return errorResponse
-
   try {
     const { id } = await params
 

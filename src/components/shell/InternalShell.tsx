@@ -127,13 +127,35 @@ export const InternalShell: React.FC<{ children: React.ReactNode; title?: string
         </nav>
 
         {/* User Info & Sign Out */}
-        <div style={{ padding: '12px 16px', borderTop: '1px solid #E4E4E7', backgroundColor: '#FAFAFA' }}>
-          <div style={{ marginBottom: '8px' }}>
-            <div style={{ fontSize: '12px', fontWeight: 600, color: '#18181B' }}>
-              {session?.user?.name || 'Internal User'}
+        <div style={{ padding: '14px 16px', borderTop: '1px solid #E4E4E7', backgroundColor: '#F8FAFC' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+            <div
+              style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                backgroundColor: '#EEF2FF',
+                border: '1px solid #C7D2FE',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '12px',
+                fontWeight: 700,
+                color: '#4F46E5',
+                flexShrink: 0,
+              }}
+            >
+              {(session?.user?.name || 'U').charAt(0).toUpperCase()}
             </div>
-            <div style={{ fontSize: '11px', color: '#71717A' }}>
-              Role: <span style={{ fontWeight: 600, color: '#4F46E5' }}>{session?.user?.role || 'REP'}</span>
+            <div style={{ overflow: 'hidden' }}>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: '#0F172A', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+                {session?.user?.name || 'Alex SalesRep'}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', backgroundColor: '#E0E7FF', color: '#3730A3', padding: '1px 6px', borderRadius: '4px' }}>
+                  {session?.user?.role || 'REP'}
+                </span>
+              </div>
             </div>
           </div>
           <button
@@ -143,14 +165,18 @@ export const InternalShell: React.FC<{ children: React.ReactNode; title?: string
               alignItems: 'center',
               gap: '6px',
               fontSize: '12px',
-              color: '#71717A',
+              fontWeight: 500,
+              color: '#64748B',
               background: 'none',
               border: 'none',
               cursor: 'pointer',
               padding: '4px 0',
+              transition: 'color 0.15s ease',
             }}
+            onMouseOver={(e) => (e.currentTarget.style.color = '#EF4444')}
+            onMouseOut={(e) => (e.currentTarget.style.color = '#64748B')}
           >
-            <LogOut size={14} />
+            <LogOut size={13} />
             <span>Sign out</span>
           </button>
         </div>

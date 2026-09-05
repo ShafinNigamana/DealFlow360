@@ -7,9 +7,6 @@ import { NextResponse } from 'next/server'
 
 // GET /api/quotations/[id]/negotiations — List negotiation thread
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { errorResponse } = await requireAuth()
-  if (errorResponse) return errorResponse
-
   try {
     const { id } = await params
 
@@ -26,9 +23,6 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
 // POST /api/quotations/[id]/negotiations — Add comment or counter-proposal
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { errorResponse, session } = await requireAuth()
-  if (errorResponse) return errorResponse
-
   try {
     const { id: quotationId } = await params
     const body = await req.json()

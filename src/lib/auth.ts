@@ -24,21 +24,36 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           where: { email },
         })
 
-        if (!user || !user.passwordHash) {
-          return null
+        if (user && user.passwordHash) {
+          const isValid = await bcrypt.compare(password, user.passwordHash)
+          if (isValid) {
+            return {
+              id: user.id,
+              email: user.email,
+              name: user.name,
+              role: user.role,
+            }
+          }
         }
 
-        const isValid = await bcrypt.compare(password, user.passwordHash)
-        if (!isValid) {
-          return null
+        // Also allow customer login
+        const customer = await prisma.customer.findUnique({
+          where: { email },
+        })
+
+        if (customer && customer.passwordHash) {
+          const isValid = await bcrypt.compare(password, customer.passwordHash)
+          if (isValid) {
+            return {
+              id: customer.id,
+              email: customer.email,
+              name: customer.name,
+              role: 'CUSTOMER' as any,
+            }
+          }
         }
 
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-        }
+        return null
       },
     }),
   ],
