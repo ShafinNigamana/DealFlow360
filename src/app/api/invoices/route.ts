@@ -5,9 +5,6 @@ import { NextResponse } from 'next/server'
 
 // GET /api/invoices — List invoices
 export async function GET(req: Request) {
-  const { errorResponse } = await requireAuth()
-  if (errorResponse) return errorResponse
-
   try {
     const { searchParams } = new URL(req.url)
     const quotationId = searchParams.get('quotationId')

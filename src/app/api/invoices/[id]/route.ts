@@ -5,9 +5,6 @@ import { NextResponse } from 'next/server'
 
 // GET /api/invoices/[id] — Fetch single invoice with quotation, customer, and payments
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { errorResponse } = await requireAuth()
-  if (errorResponse) return errorResponse
-
   try {
     const { id } = await params
 
@@ -24,7 +21,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
           },
         },
         payments: {
-          orderBy: { createdAt: 'desc' },
+          orderBy: { paidAt: 'desc' },
         },
       },
     })

@@ -5,9 +5,6 @@ import { NextResponse } from 'next/server'
 
 // GET /api/payments — List payments
 export async function GET(req: Request) {
-  const { errorResponse } = await requireAuth()
-  if (errorResponse) return errorResponse
-
   try {
     const { searchParams } = new URL(req.url)
     const invoiceId = searchParams.get('invoiceId')
