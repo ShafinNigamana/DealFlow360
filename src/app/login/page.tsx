@@ -10,8 +10,8 @@ import { Badge } from '@/components/ui/Badge'
 
 export default function LoginPage() {
   const router = useRouter()
-  const [email, setEmail] = useState('rep1@dealflow360.com')
-  const [password, setPassword] = useState('password123')
+  const [email, setEmail] = useState('rep@dealflow360.com')
+  const [password, setPassword] = useState('Password123!')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
@@ -42,7 +42,7 @@ export default function LoginPage() {
 
   const fillQuickUser = (userEmail: string) => {
     setEmail(userEmail)
-    setPassword('password123')
+    setPassword('Password123!')
   }
 
   return (
@@ -132,7 +132,7 @@ export default function LoginPage() {
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
               <button
                 type="button"
-                onClick={() => fillQuickUser('rep1@dealflow360.com')}
+                onClick={() => fillQuickUser('rep@dealflow360.com')}
                 style={{ background: 'none', border: 'none', cursor: 'pointer' }}
               >
                 <Badge variant="accent">Sales Rep</Badge>

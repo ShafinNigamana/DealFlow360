@@ -1,91 +1,138 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { InternalShell } from '@/components/shell/InternalShell'
 import { Card, CardHeader } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Select } from '@/components/ui/Input'
-import { Download, BarChart2 } from 'lucide-react'
+import { Badge } from '@/components/ui/Badge'
+import { DashboardMetricsResponse } from '@/types/api-contracts'
+import { BarChart2, FileText, CheckCircle, AlertTriangle } from 'lucide-react'
 
 export default function AdminReportsPage() {
-  const [period, setPeriod] = useState('30d')
-  const [team, setTeam] = useState('all')
+  const [data, setData] = useState<DashboardMetricsResponse | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState('')
 
-  const handleExportCSV = () => {
-    alert(`Exporting DealFlow360 operations report for period: ${period}, team: ${team} (CSV format)`)
-  }
+  useEffect(() => {
+    const fetchReportData = async () => {
+      setIsLoading(true)
+      try {
+        const res = await fetch('/api/dashboard')
+        if (!res.ok) throw new Error('Failed to fetch report data')
+        const json = await res.json()
+        setData(json)
+      } catch (err: any) {
+        setError(err.message || 'An error occurred')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchReportData()
+  }, [])
 
-  const handleExportPDF = () => {
-    alert(`Generating PDF summary report for period: ${period}...`)
-  }
+  const s = data?.summary
 
   return (
     <InternalShell title="Reporting & Analytics Dashboard">
       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        {/* Filter Controls Row */}
-        <Card>
-          <CardHeader title="Report Scope & Filters" />
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: '12px', alignItems: 'flex-end' }}>
-            <Select
-              label="Time Period"
-              value={period}
-              onChange={(e) => setPeriod(e.target.value)}
-              options={[
-                { label: 'Last 7 Days', value: '7d' },
-                { label: 'Last 30 Days', value: '30d' },
-                { label: 'Last Quarter (90d)', value: '90d' },
-                { label: 'Year to Date', value: 'ytd' },
-              ]}
-            />
-            <Select
-              label="Sales Team"
-              value={team}
-              onChange={(e) => setTeam(e.target.value)}
-              options={[
-                { label: 'All Teams', value: 'all' },
-                { label: 'Enterprise Sales', value: 'enterprise' },
-                { label: 'Mid-Market Sales', value: 'midmarket' },
-              ]}
-            />
-            <Select
-              label="Approval Status"
-              options={[
-                { label: 'All Statuses', value: 'all' },
-                { label: 'Approved Only', value: 'APPROVED' },
-                { label: 'Pending Only', value: 'PENDING' },
-              ]}
-            />
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <Button variant="secondary" onClick={handleExportCSV}>
-                <Download size={14} /> Export CSV
-              </Button>
-              <Button variant="primary" onClick={handleExportPDF}>
-                <BarChart2 size={14} /> Export PDF Summary
-              </Button>
-            </div>
+        {error && (
+          <div style={{ padding: '12px', borderRadius: '6px', backgroundColor: '#FEF2F2', color: '#B91C1C', fontSize: '13px' }}>
+            {error}
           </div>
-        </Card>
+        )}
 
-        {/* Analytics Summary Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+        {/* KPI Summary Cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
           <Card>
-            <span style={{ fontSize: '12px', color: '#71717A', fontWeight: 500 }}>Total Quotations Created</span>
-            <div style={{ fontSize: '24px', fontWeight: 700, color: '#18181B', marginTop: '4px' }}>128</div>
-            <span style={{ fontSize: '11px', color: '#15803D' }}>↑ 12% vs previous period</span>
-          </Card>
-          <Card>
-            <span style={{ fontSize: '12px', color: '#71717A', fontWeight: 500 }}>Avg Approval Turnaround</span>
-            <div style={{ fontSize: '24px', fontWeight: 700, color: '#4F46E5', marginTop: '4px' }}>4.2 hrs</div>
-            <span style={{ fontSize: '11px', color: '#71717A' }}>Target &lt; 6 hrs</span>
-          </Card>
-          <Card>
-            <span style={{ fontSize: '12px', color: '#71717A', fontWeight: 500 }}>Top Upsell Product</span>
-            <div style={{ fontSize: '18px', fontWeight: 700, color: '#18181B', marginTop: '4px' }}>
-              Premium Support SLA
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '36px', height: '36px', borderRadius: '6px', backgroundColor: '#EEF2FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <FileText size={18} color="#4F46E5" />
+              </div>
+              <div>
+                <span style={{ fontSize: '12px', color: '#71717A', fontWeight: 500 }}>Total Quotations</span>
+                <div style={{ fontSize: '24px', fontWeight: 700, color: '#18181B' }}>
+                  {isLoading ? '...' : s?.totalQuotations ?? 0}
+                </div>
+              </div>
             </div>
-            <span style={{ fontSize: '11px', color: '#15803D' }}>45% adoption rate</span>
+          </Card>
+
+          <Card>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '36px', height: '36px', borderRadius: '6px', backgroundColor: '#FEF3C7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <CheckCircle size={18} color="#B45309" />
+              </div>
+              <div>
+                <span style={{ fontSize: '12px', color: '#71717A', fontWeight: 500 }}>Pending Approvals</span>
+                <div style={{ fontSize: '24px', fontWeight: 700, color: '#B45309' }}>
+                  {isLoading ? '...' : s?.pendingApprovalCount ?? 0}
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          <Card>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '36px', height: '36px', borderRadius: '6px', backgroundColor: '#DCFCE7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <BarChart2 size={18} color="#15803D" />
+              </div>
+              <div>
+                <span style={{ fontSize: '12px', color: '#71717A', fontWeight: 500 }}>Approved Deals</span>
+                <div style={{ fontSize: '24px', fontWeight: 700, color: '#15803D' }}>
+                  {isLoading ? '...' : s?.approvedCount ?? 0}
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          <Card>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '36px', height: '36px', borderRadius: '6px', backgroundColor: '#FEF2F2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <AlertTriangle size={18} color="#B91C1C" />
+              </div>
+              <div>
+                <span style={{ fontSize: '12px', color: '#71717A', fontWeight: 500 }}>Open Alerts</span>
+                <div style={{ fontSize: '24px', fontWeight: 700, color: '#B91C1C' }}>
+                  {isLoading ? '...' : s?.openAlertsCount ?? 0}
+                </div>
+              </div>
+            </div>
           </Card>
         </div>
+
+        {/* Pipeline Breakdown */}
+        <Card>
+          <CardHeader title="Pipeline Status Breakdown" subtitle="Current distribution of quotations across lifecycle stages" />
+          {isLoading ? (
+            <div style={{ padding: '24px', textAlign: 'center', color: '#71717A', fontSize: '13px' }}>
+              Loading pipeline data...
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px', padding: '16px' }}>
+              {[
+                { label: 'Draft', count: s?.draftCount ?? 0, variant: 'neutral' as const },
+                { label: 'Pending Approval', count: s?.pendingApprovalCount ?? 0, variant: 'warning' as const },
+                { label: 'Approved', count: s?.approvedCount ?? 0, variant: 'success' as const },
+                { label: 'Rejected', count: s?.rejectedCount ?? 0, variant: 'danger' as const },
+                { label: 'Fulfilled', count: s?.fulfilledCount ?? 0, variant: 'accent' as const },
+              ].map((stage) => (
+                <div
+                  key={stage.label}
+                  style={{
+                    padding: '16px',
+                    borderRadius: '8px',
+                    border: '1px solid #E4E4E7',
+                    textAlign: 'center',
+                  }}
+                >
+                  <Badge variant={stage.variant}>{stage.label}</Badge>
+                  <div style={{ fontSize: '28px', fontWeight: 700, color: '#18181B', marginTop: '8px' }}>
+                    {stage.count}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
       </div>
     </InternalShell>
   )
