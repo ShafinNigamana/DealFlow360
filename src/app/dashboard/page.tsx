@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/Badge'
 import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from '@/components/ui/Table'
 import { DashboardMetricsResponse, QuotationDTO } from '@/types/api-contracts'
 import { Plus, CheckCircle, FileText, Activity } from 'lucide-react'
+import { formatDisplayId } from '@/lib/formatters'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -192,7 +193,7 @@ export default function DashboardPage() {
                     onClick={() => router.push(`/quotations/${quote.id}`)}
                   >
                     <TableCell style={{ fontWeight: 600, color: '#4F46E5' }}>
-                      #{quote.id.slice(-6)}
+                      #{formatDisplayId(quote.id)}
                     </TableCell>
                     <TableCell style={{ fontWeight: 500 }}>
                       {quote.customer?.name || 'Unknown'}

@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/Badge'
 import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from '@/components/ui/Table'
 import { QuotationDTO } from '@/types/api-contracts'
 import { Truck, Check, AlertCircle } from 'lucide-react'
+import { formatDisplayId } from '@/lib/formatters'
 
 export default function FulfillmentDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: orderId } = use(params)
@@ -61,7 +62,7 @@ export default function FulfillmentDetailPage({ params }: { params: Promise<{ id
   }
 
   return (
-    <InternalShell title={`Fulfillment Detail — Order #${orderId.slice(-6)}`}>
+    <InternalShell title={`Fulfillment Detail — Order #${formatDisplayId(orderId)}`}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         {/* Order Header Summary */}
         <Card>

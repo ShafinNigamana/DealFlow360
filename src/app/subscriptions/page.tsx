@@ -7,6 +7,7 @@ import { Card, CardHeader } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from '@/components/ui/Table'
 import { SubscriptionDTO } from '@/types/api-contracts'
+import { formatDisplayId } from '@/lib/formatters'
 
 export default function SubscriptionsPage() {
   const router = useRouter()
@@ -76,7 +77,7 @@ export default function SubscriptionsPage() {
               <TableBody>
                 {subscriptions.map((sub) => (
                   <TableRow key={sub.id} onClick={() => router.push(`/subscriptions/${sub.id}`)}>
-                    <TableCell style={{ fontWeight: 600, color: '#4F46E5' }}>#{sub.id.slice(-6)}</TableCell>
+                    <TableCell style={{ fontWeight: 600, color: '#4F46E5' }}>#{formatDisplayId(sub.id)}</TableCell>
                     <TableCell style={{ fontWeight: 500 }}>{sub.plan?.name || 'SaaS Enterprise'}</TableCell>
                     <TableCell>{sub.plan?.cadence || 'MONTHLY'}</TableCell>
                     <TableCell>{sub.plan?.prorationRule || 'Prorate'}</TableCell>

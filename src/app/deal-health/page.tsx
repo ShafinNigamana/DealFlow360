@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/Badge'
 import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from '@/components/ui/Table'
 import { DealAlertDTO } from '@/types/api-contracts'
 import { AlertCircle, Clock, AlertTriangle } from 'lucide-react'
+import { formatDisplayId } from '@/lib/formatters'
 
 export default function DealHealthPage() {
   const router = useRouter()
@@ -115,7 +116,7 @@ export default function DealHealthPage() {
                 {alerts.map((al) => (
                   <TableRow key={al.id}>
                     <TableCell style={{ fontWeight: 600, color: '#4F46E5' }}>
-                      #{al.quotationId.slice(-6)}
+                      #{formatDisplayId(al.quotationId)}
                     </TableCell>
                     <TableCell style={{ fontWeight: 500 }}>{al.quotation?.customer?.name || 'Customer'}</TableCell>
                     <TableCell>

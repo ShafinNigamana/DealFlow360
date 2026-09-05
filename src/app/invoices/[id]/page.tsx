@@ -12,6 +12,7 @@ import { Input, Select } from '@/components/ui/Input'
 import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from '@/components/ui/Table'
 import { InvoiceDTO } from '@/types/api-contracts'
 import { CreditCard, CheckCircle } from 'lucide-react'
+import { formatDisplayId } from '@/lib/formatters'
 
 export default function InvoiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: invoiceId } = use(params)
@@ -85,7 +86,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
   }
 
   return (
-    <InternalShell title={`Invoice Detail — #${invoiceId.slice(-6)}`}>
+    <InternalShell title={`Invoice Detail — #${formatDisplayId(invoiceId)}`}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         {/* Invoice Summary Header */}
         <Card>
@@ -93,14 +94,14 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#18181B' }}>
-                  Invoice #{invoiceId.slice(-6)}
+                  Invoice #{formatDisplayId(invoiceId)}
                 </h2>
                 <Badge variant={invoice?.status === 'PAID' ? 'success' : 'warning'}>
                   {invoice?.status}
                 </Badge>
               </div>
               <p style={{ fontSize: '12px', color: '#71717A', marginTop: '4px' }}>
-                Associated Quotation: #{invoice?.quotationId.slice(-6)}
+                Associated Quotation: #{formatDisplayId(invoice?.quotationId)}
               </p>
             </div>
 
@@ -140,7 +141,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
               <TableBody>
                 {invoice.payments.map((p) => (
                   <TableRow key={p.id}>
-                    <TableCell style={{ fontWeight: 600, color: '#4F46E5' }}>#{p.id.slice(-6)}</TableCell>
+                    <TableCell style={{ fontWeight: 600, color: '#4F46E5' }}>#{formatDisplayId(p.id)}</TableCell>
                     <TableCell>{p.method}</TableCell>
                     <TableCell style={{ color: '#15803D', fontWeight: 600 }}>${Number(p.amount).toFixed(2)}</TableCell>
                     <TableCell style={{ color: '#71717A', fontSize: '12px' }}>

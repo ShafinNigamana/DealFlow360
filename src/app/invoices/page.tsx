@@ -11,6 +11,7 @@ import { Select, Input } from '@/components/ui/Input'
 import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from '@/components/ui/Table'
 import { InvoiceDTO, QuotationDTO } from '@/types/api-contracts'
 import { Plus } from 'lucide-react'
+import { formatDisplayId } from '@/lib/formatters'
 
 export default function InvoicesPage() {
   const router = useRouter()
@@ -142,8 +143,8 @@ export default function InvoicesPage() {
               <TableBody>
                 {invoices.map((inv) => (
                   <TableRow key={inv.id} onClick={() => router.push(`/invoices/${inv.id}`)}>
-                    <TableCell style={{ fontWeight: 600, color: '#4F46E5' }}>#{inv.id.slice(-6)}</TableCell>
-                    <TableCell>#{inv.quotationId.slice(-6)}</TableCell>
+                    <TableCell style={{ fontWeight: 600, color: '#4F46E5' }}>#{formatDisplayId(inv.id)}</TableCell>
+                    <TableCell>#{formatDisplayId(inv.quotationId)}</TableCell>
                     <TableCell style={{ fontWeight: 600 }}>${Number(inv.amount).toFixed(2)}</TableCell>
                     <TableCell>
                       <Badge variant={inv.status === 'PAID' ? 'success' : 'warning'}>
@@ -173,7 +174,7 @@ export default function InvoicesPage() {
               onChange={(e) => handleQuotationChange(e.target.value)}
               options={quotations.map((q) => ({
                 value: q.id,
-                label: `${q.customer?.name || 'Customer'} — #${q.id.slice(-6)} ($${(
+                label: `${q.customer?.name || 'Customer'} — #${formatDisplayId(q.id)} ($${(
                   (q.lines?.reduce((s, l) => s + Number(l.lineTotal || 0), 0) || 0) * 1.18
                 ).toFixed(2)})`,
               }))}

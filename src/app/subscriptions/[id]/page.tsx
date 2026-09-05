@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/Input'
 import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from '@/components/ui/Table'
 import { SubscriptionDTO } from '@/types/api-contracts'
 import { Calendar, CreditCard, AlertTriangle } from 'lucide-react'
+import { formatDisplayId } from '@/lib/formatters'
 
 export default function BillingDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: subscriptionId } = use(params)
@@ -60,7 +61,7 @@ export default function BillingDetailPage({ params }: { params: Promise<{ id: st
   }
 
   return (
-    <InternalShell title={`Billing Detail — Subscription #${subscriptionId.slice(-6)}`}>
+    <InternalShell title={`Billing Detail — Subscription #${formatDisplayId(subscriptionId)}`}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         {/* Header Summary */}
         <Card>
@@ -134,7 +135,7 @@ export default function BillingDetailPage({ params }: { params: Promise<{ id: st
               <TableBody>
                 {sub.billingEntries.map((entry) => (
                   <TableRow key={entry.id}>
-                    <TableCell style={{ fontWeight: 600 }}>#{entry.id.slice(-6)}</TableCell>
+                    <TableCell style={{ fontWeight: 600 }}>#{formatDisplayId(entry.id)}</TableCell>
                     <TableCell style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <Calendar size={14} color="#71717A" />
                       {new Date(entry.dueDate).toLocaleDateString()}
@@ -168,7 +169,7 @@ export default function BillingDetailPage({ params }: { params: Promise<{ id: st
               <TableBody>
                 {sub.creditNotes.map((cn) => (
                   <TableRow key={cn.id}>
-                    <TableCell style={{ fontWeight: 600, color: '#4F46E5' }}>#{cn.id.slice(-6)}</TableCell>
+                    <TableCell style={{ fontWeight: 600, color: '#4F46E5' }}>#{formatDisplayId(cn.id)}</TableCell>
                     <TableCell style={{ color: '#15803D', fontWeight: 600 }}>${Number(cn.amount).toFixed(2)}</TableCell>
                     <TableCell>{cn.reason}</TableCell>
                     <TableCell style={{ color: '#71717A', fontSize: '12px' }}>

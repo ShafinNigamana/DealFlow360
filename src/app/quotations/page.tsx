@@ -11,6 +11,7 @@ import { Select } from '@/components/ui/Input'
 import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from '@/components/ui/Table'
 import { QuotationDTO, CustomerDTO } from '@/types/api-contracts'
 import { Plus, LayoutGrid, List } from 'lucide-react'
+import { formatDisplayId } from '@/lib/formatters'
 
 const KANBAN_STAGES = [
   { key: 'DRAFT', label: 'Draft' },
@@ -206,7 +207,7 @@ export default function QuotationsPage() {
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span style={{ fontSize: '12px', fontWeight: 600, color: '#4F46E5' }}>
-                            #{quote.id.slice(-6)}
+                            #{formatDisplayId(quote.id)}
                           </span>
                           {Number(quote.blendedRiskScore) > 20 && (
                             <Badge variant="danger">High Risk</Badge>
@@ -248,7 +249,7 @@ export default function QuotationsPage() {
               <TableBody>
                 {quotations.map((quote) => (
                   <TableRow key={quote.id} onClick={() => router.push(`/quotations/${quote.id}`)}>
-                    <TableCell style={{ fontWeight: 600, color: '#4F46E5' }}>#{quote.id.slice(-6)}</TableCell>
+                    <TableCell style={{ fontWeight: 600, color: '#4F46E5' }}>#{formatDisplayId(quote.id)}</TableCell>
                     <TableCell style={{ fontWeight: 500 }}>{quote.customer?.name}</TableCell>
                     <TableCell>{quote.rep?.name}</TableCell>
                     <TableCell>{quote.lines?.length || 0} items</TableCell>

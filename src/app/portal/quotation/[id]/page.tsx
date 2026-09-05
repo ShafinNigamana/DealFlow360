@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/Input'
 import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from '@/components/ui/Table'
 import { QuotationDTO } from '@/types/api-contracts'
 import { MessageSquare, Send, ShieldAlert, CheckCircle2 } from 'lucide-react'
+import { formatDisplayId } from '@/lib/formatters'
 
 export default function CustomerPortalPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: quotationId } = use(params)
@@ -102,7 +103,7 @@ export default function CustomerPortalPage({ params }: { params: Promise<{ id: s
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <h1 style={{ fontSize: '20px', fontWeight: 600, color: '#18181B' }}>
-                  Quotation Proposal #{quotationId.slice(-6)}
+                  Quotation Proposal #{formatDisplayId(quotationId)}
                 </h1>
                 <Badge variant={quote?.status === 'APPROVED' ? 'success' : 'warning'}>
                   {quote?.status === 'SENT' ? 'Under Negotiation' : quote?.status}

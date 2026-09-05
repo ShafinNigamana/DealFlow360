@@ -7,6 +7,7 @@ import { Card, CardHeader } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from '@/components/ui/Table'
 import { WarehouseDTO, QuotationDTO } from '@/types/api-contracts'
+import { formatDisplayId } from '@/lib/formatters'
 
 export default function FulfillmentPage() {
   const router = useRouter()
@@ -84,7 +85,7 @@ export default function FulfillmentPage() {
               <TableBody>
                 {orders.map((ord) => (
                   <TableRow key={ord.id} onClick={() => router.push(`/fulfillment/${ord.id}`)}>
-                    <TableCell style={{ fontWeight: 600, color: '#4F46E5' }}>#{ord.id.slice(-6)}</TableCell>
+                    <TableCell style={{ fontWeight: 600, color: '#4F46E5' }}>#{formatDisplayId(ord.id)}</TableCell>
                     <TableCell style={{ fontWeight: 500 }}>{ord.customer?.name}</TableCell>
                     <TableCell>{ord.lines?.length || 0} line items</TableCell>
                     <TableCell>

@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/Input'
 import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from '@/components/ui/Table'
 import { QuotationDTO } from '@/types/api-contracts'
 import { CheckCircle, XCircle, RotateCcw } from 'lucide-react'
+import { formatDisplayId } from '@/lib/formatters'
 
 export default function ApprovalDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: quotationId } = use(params)
@@ -100,7 +101,7 @@ export default function ApprovalDetailPage({ params }: { params: Promise<{ id: s
   }
 
   return (
-    <InternalShell title={`Approval Detail — #${quotationId.slice(-6)}`}>
+    <InternalShell title={`Approval Detail — #${formatDisplayId(quotationId)}`}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         {/* Header Overview Card */}
         <Card>

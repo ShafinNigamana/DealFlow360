@@ -10,6 +10,7 @@ import { Input, Select } from '@/components/ui/Input'
 import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from '@/components/ui/Table'
 import { QuotationDTO, ProductDTO, UpsellSuggestionDTO } from '@/types/api-contracts'
 import { Plus, Trash2, ShieldAlert, Sparkles, Send } from 'lucide-react'
+import { formatDisplayId } from '@/lib/formatters'
 
 export default function QuotationDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: quotationId } = use(params)
@@ -125,7 +126,7 @@ export default function QuotationDetailPage({ params }: { params: Promise<{ id: 
   const totalValue = quote?.lines?.reduce((sum, l) => sum + Number(l.lineTotal || 0), 0) || 0
 
   return (
-    <InternalShell title={`Quotation Builder — #${quotationId.slice(-6)}`}>
+    <InternalShell title={`Quotation Builder — #${formatDisplayId(quotationId)}`}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         {/* Header Info Banner */}
         <Card>

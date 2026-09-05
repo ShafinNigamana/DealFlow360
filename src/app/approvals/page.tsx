@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from '@/components/ui/Table'
 import { QuotationDTO } from '@/types/api-contracts'
+import { formatDisplayId } from '@/lib/formatters'
 
 export default function ApprovalsListPage() {
   const router = useRouter()
@@ -131,7 +132,7 @@ export default function ApprovalsListPage() {
 
                   return (
                     <TableRow key={quote.id} onClick={() => router.push(`/approvals/${quote.id}`)}>
-                      <TableCell style={{ fontWeight: 600, color: '#4F46E5' }}>#{quote.id.slice(-6)}</TableCell>
+                      <TableCell style={{ fontWeight: 600, color: '#4F46E5' }}>#{formatDisplayId(quote.id)}</TableCell>
                       <TableCell style={{ fontWeight: 500 }}>{quote.customer?.name}</TableCell>
                       <TableCell>{quote.rep?.name}</TableCell>
                       <TableCell>{riskBadge}</TableCell>
