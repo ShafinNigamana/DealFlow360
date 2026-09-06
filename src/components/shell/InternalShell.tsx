@@ -34,7 +34,7 @@ const navItems: NavItem[] = [
   { label: 'Subscriptions', href: '/subscriptions', icon: Repeat, roles: ['REP', 'MANAGER', 'FINANCE', 'ADMIN'] },
   { label: 'Invoices', href: '/invoices', icon: Receipt, roles: ['REP', 'MANAGER', 'FINANCE', 'ADMIN'] },
   { label: 'Deal Health', href: '/deal-health', icon: Activity, roles: ['REP', 'MANAGER', 'ADMIN'] },
-  { label: 'Reports', href: '/admin/reports', icon: BarChart3, roles: ['ADMIN'] },
+  { label: 'Reports', href: '/admin/reports', icon: BarChart3, roles: ['ADMIN', 'MANAGER'] },
   { label: 'Products', href: '/admin/products', icon: Package, roles: ['ADMIN'] },
   { label: 'Discount Setup', href: '/admin/discount-config', icon: Sliders, roles: ['ADMIN', 'MANAGER'] },
 ]
@@ -220,7 +220,7 @@ export const InternalShell: React.FC<{ children: React.ReactNode; title?: string
       </aside>
 
       {/* Main Content Area */}
-      <div style={{ flex: 1, marginLeft: '210px', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+      <div className="main-content-wrapper" style={{ flex: 1, marginLeft: '210px', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         {/* Quiet Top Bar */}
         <header
           style={{

@@ -181,3 +181,43 @@ select:focus-visible {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--copper-500);
 }
+
+/* Print / PDF Output Optimization */
+@media print {
+  @page {
+    margin: 1.2cm;
+    size: A4 portrait;
+  }
+  body {
+    background: #FFFFFF !important;
+    color: #0F172A !important;
+    font-size: 11pt !important;
+  }
+  aside,
+  header,
+  .no-print {
+    display: none !important;
+  }
+  .main-content-wrapper {
+    margin-left: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+  .print-page-break {
+    page-break-before: always;
+    break-before: page;
+  }
+  .print-avoid-break {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .print-only {
+    display: block !important;
+  }
+}
+
+@media screen {
+  .print-only {
+    display: none !important;
+  }
+}
