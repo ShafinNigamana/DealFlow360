@@ -120,9 +120,9 @@ export default function QuotationDetailPage({ params }: { params: Promise<{ id: 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           productId: prodId,
-          quantity: Number(quantity),
-          unitDiscountPercent: Number(discountPercent),
-          subscriptionPlanId: selectedPlanId || null,
+          quantity: overrideProductId ? 1 : (Number(quantity) || 1),
+          unitDiscountPercent: overrideProductId ? 0 : (Number(discountPercent) || 0),
+          subscriptionPlanId: overrideProductId ? null : (selectedPlanId || null),
         }),
       })
 
@@ -474,14 +474,18 @@ export default function QuotationDetailPage({ params }: { params: Promise<{ id: 
             </div>
           </Card>
 
-          {/* Upsell / Cross-sell Suggestions Panel (Only active while drafting quotation) */}
-          {canEdit && upsells.length > 0 && (
+          {/* Upsell / Cross-sell Suggestions Panel */}
+          {upsells.length > 0 && (
             <Card>
               <CardHeader
                 title="Upsell & Cross-Sell Suggestions"
-                subtitle="Ranked suggestions based on co-purchase pairings and margin thresholds"
+                subtitle={
+                  canEdit
+                    ? "Ranked recommendations based on co-purchase pairings. Sales Reps can click to add directly to proposal."
+                    : `Contract ${quote?.status || 'Locked'}. To purchase additional items for this client, create an Add-On Quotation.`
+                }
               />
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '10px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '10px' }}>
                 {upsells.map((sug, idx) => (
                   <div
                     key={sug.ruleId || sug.id || `upsell-${idx}`}
@@ -493,7 +497,7 @@ export default function QuotationDetailPage({ params }: { params: Promise<{ id: 
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'space-between',
-                      gap: '8px',
+                      gap: '10px',
                       transition: 'border-color 180ms ease',
                     }}
                     onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'var(--copper-500)')}
@@ -527,15 +531,39 @@ export default function QuotationDetailPage({ params }: { params: Promise<{ id: 
                         {(sug as any).reason || (sug.isPromoted ? 'Featured partner promotion' : 'Recommended pairing')} • Base: ${Number(sug.suggestedProduct?.basePrice || 0).toFixed(2)}
                       </p>
                     </div>
-                    {canEdit && (
+
+                    {canEdit ? (
                       <Button
-                        variant="secondary"
+                        variant="primary"
                         size="sm"
                         onClick={() => handleAddLine(sug.suggestedProduct?.id)}
-                        style={{ alignSelf: 'flex-start' }}
+                        style={{ alignSelf: 'flex-start', fontSize: '11.5px' }}
                       >
-                        <Plus size={11} /> Add to Quote
+                        <Plus size={12} /> Add to Proposal (Sales Rep)
                       </Button>
+                    ) : (
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          borderTop: '1px solid var(--border-subtle)',
+                          paddingTop: '8px',
+                          fontSize: '11px',
+                        }}
+                      >
+                        <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>
+                          🔒 Locked ({quote?.status})
+                        </span>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => router.push('/quotations')}
+                          style={{ fontSize: '11px', padding: '3px 8px' }}
+                        >
+                          + New Add-On Quote
+                        </Button>
+                      </div>
                     )}
                   </div>
                 ))}
