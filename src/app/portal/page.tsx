@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useSession } from 'next-auth/react'
+import { useSession, signOut } from 'next-auth/react'
 import { PortalShell } from '@/components/shell/PortalShell'
 import { Card, CardHeader } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
@@ -26,9 +26,13 @@ export default function CustomerPortalPage() {
     }
 
     if (status === 'authenticated') {
+      if (session?.user?.role !== 'CUSTOMER') {
+        setIsLoading(false)
+        return
+      }
       fetchCustomerQuotations()
     }
-  }, [status, router])
+  }, [status, router, session])
 
   const fetchCustomerQuotations = async () => {
     setIsLoading(true)
@@ -49,7 +53,51 @@ export default function CustomerPortalPage() {
     return (
       <PortalShell customerName={session?.user?.name || 'Customer'}>
         <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-secondary)', fontSize: '13px' }}>
-          Loading your customer account portal...
+          Loading customer portal...
+        </div>
+      </PortalShell>
+    )
+  }
+
+  // If internal staff visits the customer portal
+  if (session?.user?.role !== 'CUSTOMER') {
+    return (
+      <PortalShell customerName={`${session?.user?.name || 'Staff'} (Internal ${session?.user?.role || ''})`}>
+        <div style={{ maxWidth: '520px', margin: '40px auto', textAlign: 'center' }}>
+          <Card style={{ padding: '32px 24px' }}>
+            <div
+              style={{
+                width: '50px',
+                height: '50px',
+                borderRadius: '12px',
+                backgroundColor: 'var(--status-pending-subtle)',
+                border: '1px solid var(--status-pending-border)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px',
+                color: 'var(--copper-600)',
+              }}
+            >
+              <AlertCircle size={26} />
+            </div>
+            <h2 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--ink-900)', marginBottom: '8px' }}>
+              Internal Staff Session Active
+            </h2>
+            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.5', marginBottom: '20px' }}>
+              You are currently signed in as <strong style={{ color: 'var(--ink-900)' }}>{session?.user?.name}</strong> (Role: {session?.user?.role}).
+              <br /><br />
+              The Customer Portal is reserved for client accounts (e.g. <strong>Acme Corporation</strong>). Sales reps manage quotes from the Sales Console.
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}>
+              <Button variant="primary" size="md" onClick={() => router.push('/dashboard')}>
+                Go to Sales Dashboard
+              </Button>
+              <Button variant="secondary" size="md" onClick={() => signOut({ callbackUrl: '/login' })}>
+                Sign Out & Switch to Customer
+              </Button>
+            </div>
+          </Card>
         </div>
       </PortalShell>
     )
