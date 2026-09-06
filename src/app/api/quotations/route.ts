@@ -16,7 +16,7 @@ export async function GET(req: Request) {
 
   try {
     const { searchParams } = new URL(req.url)
-    const status = searchParams.get('status') as QuotationStatus | null
+    const statusParam = searchParams.get('status')
     const customerId = searchParams.get('customerId')
     const repId = searchParams.get('repId')
 
@@ -31,7 +31,13 @@ export async function GET(req: Request) {
       where.repId = repId
     }
 
-    if (status) where.status = status
+    if (statusParam) {
+      if (statusParam.includes(',')) {
+        where.status = { in: statusParam.split(',') as QuotationStatus[] }
+      } else {
+        where.status = statusParam as QuotationStatus
+      }
+    }
     if (customerId) where.customerId = customerId
 
     const quotations = await prisma.quotation.findMany({

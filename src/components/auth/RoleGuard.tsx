@@ -58,7 +58,11 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({ allowedRoles, children, fa
 
   const userRole = (session?.user?.role as string) || ''
 
-  if (!allowedRoles.includes(userRole)) {
+  // System Admin (ADMIN) has administrative oversight across all internal console sections
+  const isClientPortalOnly = allowedRoles.length === 1 && allowedRoles[0] === 'CUSTOMER'
+  const isPermitted = (userRole === 'ADMIN' && !isClientPortalOnly) || allowedRoles.includes(userRole)
+
+  if (!isPermitted) {
     if (fallback) return <>{fallback}</>
 
     // Default Access Denied display

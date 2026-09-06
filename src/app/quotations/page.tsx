@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { InternalShell } from '@/components/shell/InternalShell'
 import { RoleGuard } from '@/components/auth/RoleGuard'
 import { Card } from '@/components/ui/Card'
@@ -21,6 +22,9 @@ const KANBAN_STAGES = [
 
 export default function QuotationsPage() {
   const router = useRouter()
+  const { data: session } = useSession()
+  const userRole = (session?.user?.role as string) || ''
+  const canCreate = userRole === 'REP' || userRole === 'MANAGER' || userRole === 'ADMIN'
   const [quotations, setQuotations] = useState<QuotationDTO[]>([])
   const [customers, setCustomers] = useState<CustomerDTO[]>([])
   const [viewMode, setViewMode] = useState<'kanban' | 'table'>('table')
@@ -187,14 +191,20 @@ export default function QuotationsPage() {
 
   return (
     <InternalShell title="Quotations Pipeline">
-      <RoleGuard allowedRoles={['REP', 'MANAGER']}>
+      <RoleGuard allowedRoles={['REP', 'MANAGER', 'FINANCE', 'ADMIN']}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           {/* Top Controls Bar */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Button variant="primary" size="sm" onClick={() => setIsModalOpen(true)}>
-              <Plus size={13} />
-              New Quotation
-            </Button>
+            {canCreate ? (
+              <Button variant="primary" size="sm" onClick={() => setIsModalOpen(true)}>
+                <Plus size={13} />
+                New Quotation
+              </Button>
+            ) : (
+              <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                Live Quotations Overview (Read-Only Audit)
+              </div>
+            )}
 
             {/* View Mode Switcher */}
             <div style={{ display: 'flex', gap: '2px', backgroundColor: 'var(--neutral-100)', padding: '2px', borderRadius: '4px', border: '1px solid var(--border-subtle)' }}>

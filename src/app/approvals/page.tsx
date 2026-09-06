@@ -88,7 +88,7 @@ export default function ApprovalsPage() {
 
   return (
     <InternalShell title="Discount Approval Queue">
-      <RoleGuard allowedRoles={['MANAGER', 'FINANCE']}>
+      <RoleGuard allowedRoles={['MANAGER', 'FINANCE', 'ADMIN']}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           {/* Header & Filter Toggle */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

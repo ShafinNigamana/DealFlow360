@@ -55,7 +55,7 @@ export default function DealHealthPage() {
 
   return (
     <InternalShell title="Deal Health & Risk Anomalies">
-      <RoleGuard allowedRoles={['MANAGER']}>
+      <RoleGuard allowedRoles={['MANAGER', 'ADMIN']}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           {/* Header Description */}
           <div>

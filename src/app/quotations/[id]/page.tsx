@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/Button'
 import { Input, Select } from '@/components/ui/Input'
 import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from '@/components/ui/Table'
 import { QuotationDTO, ProductDTO, UpsellSuggestionDTO, SubscriptionPlanDTO } from '@/types/api-contracts'
-import { Plus, Trash2, Send, ShieldAlert, Sparkles, CheckCircle, Eye, MessageSquare } from 'lucide-react'
+import { Plus, Trash2, Send, ShieldAlert, Sparkles, CheckCircle, CheckCircle2, Eye, MessageSquare, Receipt, Truck, FileText } from 'lucide-react'
 import { formatDisplayId } from '@/lib/formatters'
 
 export default function QuotationDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -28,6 +28,7 @@ export default function QuotationDetailPage({ params }: { params: Promise<{ id: 
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isConfirming, setIsConfirming] = useState(false)
 
   // Staff reply to customer state
   const [replyText, setReplyText] = useState('')
@@ -169,6 +170,30 @@ export default function QuotationDetailPage({ params }: { params: Promise<{ id: 
       alert(err.message)
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  const handleConfirmOrder = async () => {
+    if (!confirm('Confirm and checkout this quotation as an official Sales Order? This will automatically generate the client invoice and allocate multi-warehouse fulfillment.')) return
+    setIsConfirming(true)
+    try {
+      const res = await fetch(`/api/quotations/${quotationId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'CONFIRMED' }),
+      })
+
+      if (!res.ok) {
+        const errJson = await res.json()
+        throw new Error(errJson.error || 'Failed to confirm quotation')
+      }
+
+      alert('Quotation successfully confirmed! Downstream order fulfillment and client invoicing have been initiated.')
+      fetchQuoteDetail()
+    } catch (err: any) {
+      alert(err.message)
+    } finally {
+      setIsConfirming(false)
     }
   }
 
@@ -640,7 +665,59 @@ export default function QuotationDetailPage({ params }: { params: Promise<{ id: 
             )}
           </Card>
 
-          {/* Action Bar (Submit for Approval or Review in Approvals) */}
+          {/* Confirmed Sales Order Operational Hub */}
+          {quote?.status === 'CONFIRMED' && (
+            <Card
+              style={{
+                backgroundColor: 'var(--status-approved-subtle)',
+                border: '1px solid var(--status-approved-border)',
+                padding: '16px 20px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '8px',
+                      backgroundColor: 'rgba(22, 101, 52, 0.12)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'var(--status-approved)',
+                    }}
+                  >
+                    <CheckCircle2 size={22} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--status-approved)' }}>
+                      Sales Order Confirmed & Locked (#{formatDisplayId(quotationId)})
+                    </div>
+                    <div style={{ fontSize: '12.5px', color: 'var(--ink-900)', marginTop: '2px' }}>
+                      Agreement verified. Downstream billing and multi-warehouse fulfillment are active.
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  <Button variant="secondary" size="sm" onClick={() => router.push('/invoices')}>
+                    <Receipt size={13} /> View Invoice &rarr;
+                  </Button>
+                  <Button variant="secondary" size="sm" onClick={() => router.push(`/fulfillment/${quotationId}`)}>
+                    <Truck size={13} /> Warehouse Logistics &rarr;
+                  </Button>
+                  {quote?.lines?.some((l) => l.subscriptionPlanId) && (
+                    <Button variant="secondary" size="sm" onClick={() => router.push('/subscriptions')}>
+                      <FileText size={13} /> Subscriptions &rarr;
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </Card>
+          )}
+
+          {/* Action Bar (Submit for Approval, Review in Approvals, or Confirm Order) */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
             {canEdit && (
               <Button
@@ -662,6 +739,17 @@ export default function QuotationDetailPage({ params }: { params: Promise<{ id: 
               >
                 <CheckCircle size={13} />
                 Review in Approvals &rarr;
+              </Button>
+            )}
+            {(quote?.status === 'APPROVED' || quote?.status === 'SENT') && (userRole === 'REP' || userRole === 'ADMIN') && (
+              <Button
+                variant="primary"
+                size="md"
+                onClick={handleConfirmOrder}
+                isLoading={isConfirming}
+              >
+                <CheckCircle2 size={13} />
+                Confirm & Lock Order (Client Signed PO)
               </Button>
             )}
           </div>

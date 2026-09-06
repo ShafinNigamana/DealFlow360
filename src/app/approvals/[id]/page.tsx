@@ -146,7 +146,7 @@ export default function ApprovalDetailPage({ params }: { params: Promise<{ id: s
 
   return (
     <InternalShell title={`Approval Detail — #${formatDisplayId(quotationId)}`}>
-      <RoleGuard allowedRoles={['MANAGER', 'FINANCE']}>
+      <RoleGuard allowedRoles={['MANAGER', 'FINANCE', 'ADMIN']}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           {/* Header Overview Card */}
           <Card>

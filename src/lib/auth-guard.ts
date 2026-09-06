@@ -97,6 +97,12 @@ export async function requireAuth(allowedRoles?: AppRole[]) {
   }
 
   if (allowedRoles && allowedRoles.length > 0) {
+    // System Admin (ADMIN) has administrative superuser access across all internal API endpoints
+    const isCustomerOnly = allowedRoles.length === 1 && allowedRoles[0] === 'CUSTOMER'
+    if (!isCustomerOnly && session.user.role === 'ADMIN') {
+      return { errorResponse: null, session }
+    }
+
     if (!allowedRoles.includes(session.user.role)) {
       return {
         errorResponse: NextResponse.json(

@@ -9,8 +9,9 @@ import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Input } from '@/components/ui/Input'
 import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from '@/components/ui/Table'
+import { Modal } from '@/components/ui/Modal'
 import { QuotationDTO } from '@/types/api-contracts'
-import { MessageSquare, Send, ShieldAlert, CheckCircle2, AlertOctagon } from 'lucide-react'
+import { MessageSquare, Send, ShieldAlert, CheckCircle2, AlertOctagon, Printer, ArrowLeft, Receipt, Check, FileText } from 'lucide-react'
 import { formatDisplayId } from '@/lib/formatters'
 
 export default function CustomerPortalPage({ params }: { params: Promise<{ id: string }> }) {
@@ -26,6 +27,7 @@ export default function CustomerPortalPage({ params }: { params: Promise<{ id: s
   const [commentText, setCommentText] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isConfirming, setIsConfirming] = useState(false)
+  const [showReceiptModal, setShowReceiptModal] = useState(false)
 
   const fetchQuote = async () => {
     setIsLoading(true)
@@ -251,27 +253,112 @@ export default function CustomerPortalPage({ params }: { params: Promise<{ id: s
             <div
               style={{
                 marginTop: '16px',
-                padding: '16px',
+                padding: '20px',
                 backgroundColor: 'var(--status-approved-subtle)',
                 border: '1px solid var(--status-approved-border)',
-                borderRadius: '4px',
+                borderRadius: '6px',
                 display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
+                flexDirection: 'column',
+                gap: '16px',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <CheckCircle2 size={20} color="var(--status-approved)" />
-                <div>
-                  <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--status-approved)' }}>
-                    Quotation Confirmed & Accepted
+              {/* Header Status */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div
+                    style={{
+                      width: '42px',
+                      height: '42px',
+                      borderRadius: '8px',
+                      backgroundColor: 'rgba(22, 101, 52, 0.12)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'var(--status-approved)',
+                    }}
+                  >
+                    <CheckCircle2 size={24} />
                   </div>
-                  <div style={{ fontSize: '12px', color: 'var(--ink-900)' }}>
-                    This proposal is confirmed. Order fulfillment and invoicing are underway.
+                  <div>
+                    <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--status-approved)' }}>
+                      Quotation Confirmed & Sales Order Locked (#SO-{formatDisplayId(quotationId)})
+                    </div>
+                    <div style={{ fontSize: '12px', color: 'var(--ink-900)', marginTop: '2px' }}>
+                      Your agreement is finalized. Automated billing and multi-warehouse fulfillment are active.
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  <Button variant="primary" size="sm" onClick={() => setShowReceiptModal(true)}>
+                    <Printer size={13} /> View & Print Official Receipt
+                  </Button>
+                  <Button variant="secondary" size="sm" onClick={() => router.push('/portal')}>
+                    <ArrowLeft size={13} /> Back to Portal
+                  </Button>
+                </div>
+              </div>
+
+              {/* Lifecycle Progress Stepper */}
+              <div
+                style={{
+                  backgroundColor: '#FFFFFF',
+                  borderRadius: '6px',
+                  border: '1px solid var(--border-subtle)',
+                  padding: '12px 16px',
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                  gap: '12px',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: 'var(--status-approved)', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700 }}>
+                    ✓
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--ink-900)' }}>1. Terms Approved</div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Governance verified</div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: 'var(--status-approved)', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700 }}>
+                    ✓
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--ink-900)' }}>2. Order Confirmed</div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Sales Order placed</div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: 'var(--status-approved)', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700 }}>
+                    ✓
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--ink-900)' }}>
+                      3. Invoice Generated
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
+                      {quote?.invoices && quote.invoices.length > 0 ? (
+                        <span>${Number(quote.invoices[0].amount).toFixed(2)} (Tax Included)</span>
+                      ) : (
+                        <span>${(subtotal * 1.18).toFixed(2)} (Tax Included)</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: 'var(--copper-500)', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700 }}>
+                    4
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--ink-900)' }}>4. Fulfillment Queue</div>
+                    <div style={{ fontSize: '11px', color: 'var(--copper-600)' }}>Warehouse dispatch</div>
                   </div>
                 </div>
               </div>
-              <Badge variant="success">Confirmed Order</Badge>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', borderTop: '1px solid var(--border-subtle)', paddingTop: '16px' }}>
@@ -349,6 +436,103 @@ export default function CustomerPortalPage({ params }: { params: Promise<{ id: s
             </div>
           )}
         </Card>
+
+        {/* Printable Official Order Confirmation & Receipt Modal */}
+        <Modal
+          isOpen={showReceiptModal}
+          onClose={() => setShowReceiptModal(false)}
+          title={`Order Confirmation & Tax Invoice — #SO-${formatDisplayId(quotationId)}`}
+          footer={
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <Button variant="secondary" size="sm" onClick={() => setShowReceiptModal(false)}>
+                Close
+              </Button>
+              <Button variant="primary" size="sm" onClick={() => window.print()}>
+                <Printer size={13} /> Print / Download PDF
+              </Button>
+            </div>
+          }
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', fontSize: '12.5px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '12px' }}>
+              <div>
+                <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--ink-900)' }}>DealFlow360 Operations</div>
+                <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Enterprise B2B Order Fulfillment</div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontWeight: 700, color: 'var(--copper-700)' }}>Sales Order: #SO-{formatDisplayId(quotationId)}</div>
+                <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
+                  Date: {new Date(quote?.updatedAt || Date.now()).toLocaleDateString()}
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+              <div>
+                <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '3px' }}>
+                  Bill To
+                </div>
+                <div style={{ fontWeight: 700, color: 'var(--ink-900)' }}>{quote?.customer?.name}</div>
+                <div style={{ color: 'var(--text-secondary)' }}>{quote?.customer?.email}</div>
+                <div style={{ color: 'var(--text-secondary)' }}>Tier: {quote?.customer?.tier?.name || 'Standard'}</div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '3px' }}>
+                  Order Status
+                </div>
+                <Badge variant="success">Confirmed & Invoicing Active</Badge>
+                {quote?.invoices && quote.invoices.length > 0 && (
+                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                    Invoice Ref: #INV-{quote.invoices[0].id.slice(-6).toUpperCase()}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Line items summary */}
+            <div style={{ border: '1px solid var(--border-subtle)', borderRadius: '4px', overflow: 'hidden' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11.5px' }}>
+                <thead style={{ backgroundColor: 'var(--neutral-100)', borderBottom: '1px solid var(--border-subtle)' }}>
+                  <tr>
+                    <th style={{ padding: '6px 10px', textAlign: 'left' }}>Item</th>
+                    <th style={{ padding: '6px 10px', textAlign: 'center' }}>Qty</th>
+                    <th style={{ padding: '6px 10px', textAlign: 'right' }}>Discount</th>
+                    <th style={{ padding: '6px 10px', textAlign: 'right' }}>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {quote?.lines?.map((l) => (
+                    <tr key={l.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                      <td style={{ padding: '6px 10px' }}>
+                        <div style={{ fontWeight: 600 }}>{l.product?.name}</div>
+                        {l.variant && <div style={{ fontSize: '10.5px', color: 'var(--text-secondary)' }}>{l.variant.attributeName}: {l.variant.value}</div>}
+                      </td>
+                      <td style={{ padding: '6px 10px', textAlign: 'center' }}>{l.quantity}</td>
+                      <td style={{ padding: '6px 10px', textAlign: 'right' }}>{Number(l.unitDiscountPercent)}%</td>
+                      <td style={{ padding: '6px 10px', textAlign: 'right', fontWeight: 600 }}>${Number(l.lineTotal).toFixed(2)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Financial summary */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', width: '220px', color: 'var(--text-secondary)' }}>
+                <span>Subtotal:</span>
+                <span>${subtotal.toFixed(2)}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', width: '220px', color: 'var(--text-secondary)' }}>
+                <span>Standard Tax (18%):</span>
+                <span>${(subtotal * 0.18).toFixed(2)}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', width: '220px', fontWeight: 800, fontSize: '14px', color: 'var(--ink-900)', borderTop: '1px solid var(--border-subtle)', paddingTop: '4px' }}>
+                <span>Total Amount:</span>
+                <span>${(subtotal * 1.18).toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
+        </Modal>
       </div>
     </PortalShell>
   )

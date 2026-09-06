@@ -19,7 +19,10 @@ export default function FulfillmentPage() {
   const fetchData = async () => {
     setIsLoading(true)
     try {
-      const [wRes, qRes] = await Promise.all([fetch('/api/warehouses'), fetch('/api/quotations?status=APPROVED')])
+      const [wRes, qRes] = await Promise.all([
+        fetch('/api/warehouses'),
+        fetch('/api/quotations?status=CONFIRMED,APPROVED'),
+      ])
       if (wRes.ok) setWarehouses(await wRes.json())
       if (qRes.ok) setOrders(await qRes.json())
     } catch (err: any) {
@@ -66,13 +69,13 @@ export default function FulfillmentPage() {
           )}
         </Card>
 
-        {/* Approved Orders Awaiting Fulfillment Table */}
+        {/* Approved and Confirmed Orders Awaiting Fulfillment Table */}
         <Card style={{ padding: 0 }}>
-          <CardHeader title="Approved Orders Awaiting Fulfillment" subtitle="Click an order to execute stock deduction and warehouse split" />
+          <CardHeader title="Confirmed & Approved Orders Awaiting Fulfillment" subtitle="Click an order to execute stock deduction and multi-warehouse split" />
           {isLoading ? (
             <div style={{ padding: '24px', textAlign: 'center', color: '#71717A', fontSize: '13px' }}>Loading orders...</div>
           ) : orders.length === 0 ? (
-            <div style={{ padding: '24px', textAlign: 'center', color: '#71717A', fontSize: '13px' }}>No approved orders awaiting fulfillment.</div>
+            <div style={{ padding: '24px', textAlign: 'center', color: '#71717A', fontSize: '13px' }}>No orders currently awaiting fulfillment.</div>
           ) : (
             <Table>
               <TableHead>
@@ -93,7 +96,9 @@ export default function FulfillmentPage() {
                     <TableCell style={{ fontWeight: 600, color: 'var(--ink-900)' }}>{ord.customer?.name}</TableCell>
                     <TableCell style={{ color: 'var(--text-secondary)' }}>{ord.lines?.length || 0} items</TableCell>
                     <TableCell>
-                      <Badge variant="warning">Awaiting Split</Badge>
+                      <Badge variant={ord.status === 'CONFIRMED' ? 'success' : 'warning'}>
+                        {ord.status === 'CONFIRMED' ? 'Confirmed (Ready)' : 'Awaiting Split'}
+                      </Badge>
                     </TableCell>
                     <TableCell style={{ color: 'var(--copper-500)', fontWeight: 600 }}>Manage Split →</TableCell>
                   </TableRow>
