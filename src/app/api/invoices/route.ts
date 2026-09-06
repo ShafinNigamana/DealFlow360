@@ -5,7 +5,12 @@ import { NextResponse } from 'next/server'
 
 // GET /api/invoices — List invoices
 export async function GET(req: Request) {
-  const { errorResponse } = await requireAuth([UserRole.FINANCE, UserRole.ADMIN])
+  const { errorResponse, session } = await requireAuth([
+    UserRole.REP,
+    UserRole.MANAGER,
+    UserRole.FINANCE,
+    UserRole.ADMIN,
+  ])
   if (errorResponse) return errorResponse
 
   try {

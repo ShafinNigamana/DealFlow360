@@ -694,14 +694,29 @@ export default function QuotationDetailPage({ params }: { params: Promise<{ id: 
                     <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--status-approved)' }}>
                       Sales Order Confirmed & Locked (#{formatDisplayId(quotationId)})
                     </div>
-                    <div style={{ fontSize: '12.5px', color: 'var(--ink-900)', marginTop: '2px' }}>
-                      Agreement verified. Downstream billing and multi-warehouse fulfillment are active.
+                    <div style={{ fontSize: '12px', color: 'var(--ink-900)', marginTop: '3px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                      <span>Agreement verified. Order fulfillment and billing are active.</span>
+                      {quote?.invoices && quote.invoices.length > 0 && (
+                        <span style={{ fontWeight: 600, color: 'var(--copper-700)', backgroundColor: 'rgba(255, 255, 255, 0.7)', padding: '1px 6px', borderRadius: '3px', border: '1px solid var(--border-subtle)' }}>
+                          Invoice #{quote.invoices[0].id.slice(-6).toUpperCase()} • ${Number(quote.invoices[0].amount).toFixed(2)} • {quote.invoices[0].status}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                  <Button variant="secondary" size="sm" onClick={() => router.push('/invoices')}>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      if (quote?.invoices && quote.invoices.length > 0) {
+                        router.push(`/invoices/${quote.invoices[0].id}`)
+                      } else {
+                        router.push('/invoices')
+                      }
+                    }}
+                  >
                     <Receipt size={13} /> View Invoice &rarr;
                   </Button>
                   <Button variant="secondary" size="sm" onClick={() => router.push(`/fulfillment/${quotationId}`)}>
