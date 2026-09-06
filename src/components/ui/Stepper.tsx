@@ -19,7 +19,7 @@ export const Stepper: React.FC<StepperProps> = ({ steps, currentStepIndex }) => 
         alignItems: 'center',
         justifyContent: 'space-between',
         position: 'relative',
-        padding: '16px 0',
+        padding: '12px 0',
         width: '100%',
       }}
     >
@@ -27,11 +27,11 @@ export const Stepper: React.FC<StepperProps> = ({ steps, currentStepIndex }) => 
       <div
         style={{
           position: 'absolute',
-          top: '28px',
-          left: '20px',
-          right: '20px',
+          top: '24px',
+          left: '30px',
+          right: '30px',
           height: '2px',
-          backgroundColor: '#E4E4E7',
+          backgroundColor: 'var(--neutral-200)',
           zIndex: 1,
         }}
       />
@@ -41,17 +41,17 @@ export const Stepper: React.FC<StepperProps> = ({ steps, currentStepIndex }) => 
         const isCurrent = idx === currentStepIndex
 
         let circleBg = '#FFFFFF'
-        let circleBorder = '#E4E4E7'
-        let circleColor = '#71717A'
+        let circleBorder = 'var(--neutral-200)'
+        let circleColor = 'var(--text-muted)'
 
         if (isCompleted) {
-          circleBg = '#4F46E5'
-          circleBorder = '#4F46E5'
+          circleBg = 'var(--status-approved)'
+          circleBorder = 'var(--status-approved)'
           circleColor = '#FFFFFF'
         } else if (isCurrent) {
-          circleBg = '#FFFFFF'
-          circleBorder = '#4F46E5'
-          circleColor = '#4F46E5'
+          circleBg = 'var(--status-pending-subtle)'
+          circleBorder = 'var(--copper-500)'
+          circleColor = 'var(--copper-700)'
         }
 
         return (
@@ -68,38 +68,40 @@ export const Stepper: React.FC<StepperProps> = ({ steps, currentStepIndex }) => 
           >
             <div
               style={{
-                width: '26px',
-                height: '26px',
+                width: '24px',
+                height: '24px',
                 borderRadius: '50%',
                 backgroundColor: circleBg,
                 border: `2px solid ${circleBorder}`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '12px',
-                fontWeight: 600,
+                fontSize: '11px',
+                fontWeight: 700,
                 color: circleColor,
-                transition: 'all 0.2s ease',
+                fontVariantNumeric: 'tabular-nums',
               }}
             >
               {isCompleted ? '✓' : idx + 1}
             </div>
-            <span
-              style={{
-                fontSize: '12px',
-                fontWeight: isCurrent ? 600 : 500,
-                color: isCurrent ? '#4F46E5' : isCompleted ? '#18181B' : '#71717A',
-                marginTop: '6px',
-                textAlign: 'center',
-              }}
-            >
-              {step.label}
-            </span>
-            {step.sublabel && (
-              <span style={{ fontSize: '10px', color: '#A1A1AA', textAlign: 'center' }}>
-                {step.sublabel}
-              </span>
-            )}
+
+            <div style={{ marginTop: '8px', textAlign: 'center' }}>
+              <div
+                style={{
+                  fontSize: '12px',
+                  fontWeight: isCurrent ? 700 : 600,
+                  color: isCurrent ? 'var(--ink-900)' : isCompleted ? 'var(--status-approved)' : 'var(--text-secondary)',
+                  letterSpacing: '-0.01em',
+                }}
+              >
+                {step.label}
+              </div>
+              {step.sublabel && (
+                <div style={{ fontSize: '10.5px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                  {step.sublabel}
+                </div>
+              )}
+            </div>
           </div>
         )
       })}

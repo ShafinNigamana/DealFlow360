@@ -6,7 +6,7 @@
   <!-- Stage 3: Fulfillment (Bottom Horizon) -->
   <path d="M38 38H14L18 30H38V38Z" fill="#0F172A" opacity="0.76"/>
   <!-- Stage 4: Billing (Left Ascent - Closes Loop) -->
-  <path d="M10 34V10L18 14V30L10 34Z" fill="#4F46E5"/>
+  <path d="M10 34V10L18 14V30L10 34Z" fill="#C08552"/>
   <!-- Center Diamond Negative Space Anchor -->
-  <rect x="21" y="21" width="6" height="6" transform="rotate(45 24 24)" fill="#4F46E5"/>
+  <rect x="21" y="21" width="6" height="6" transform="rotate(45 24 24)" fill="#C08552"/>
 </svg>

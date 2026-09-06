@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
@@ -39,6 +39,43 @@ const navItems: NavItem[] = [
   { label: 'Discount Setup', href: '/admin/discount-config', icon: Sliders, roles: ['ADMIN', 'MANAGER'] },
 ]
 
+const NavLink: React.FC<{
+  item: NavItem
+  isActive: boolean
+}> = ({ item, isActive }) => {
+  const [isHovered, setIsHovered] = useState(false)
+  const Icon = item.icon
+
+  return (
+    <Link
+      href={item.href}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+        padding: '7px 14px',
+        borderLeft: isActive ? '3px solid var(--copper-500)' : '3px solid transparent',
+        fontSize: '12.5px',
+        fontWeight: isActive ? 600 : 500,
+        color: isActive || isHovered ? '#FFFFFF' : 'var(--sidebar-text)',
+        backgroundColor: isActive
+          ? 'rgba(192, 133, 82, 0.10)'
+          : isHovered
+          ? 'rgba(255, 255, 255, 0.04)'
+          : 'transparent',
+        marginBottom: '2px',
+        transition: 'all 180ms cubic-bezier(0.4, 0, 0.2, 1)',
+        cursor: 'pointer',
+      }}
+    >
+      <Icon size={15} color={isActive ? 'var(--copper-500)' : isHovered ? '#FFFFFF' : 'var(--sidebar-text)'} />
+      <span>{item.label}</span>
+    </Link>
+  )
+}
+
 export const InternalShell: React.FC<{ children: React.ReactNode; title?: string }> = ({
   children,
   title,
@@ -54,23 +91,24 @@ export const InternalShell: React.FC<{ children: React.ReactNode; title?: string
 
   if (session && userRole === 'CUSTOMER') {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F8FAFC', padding: '24px' }}>
-        <div style={{ maxWidth: '440px', textAlign: 'center', backgroundColor: '#FFFFFF', padding: '32px', borderRadius: '12px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: 600, color: '#0F172A', marginBottom: '8px' }}>Internal Workspace Restricted</h2>
-          <p style={{ fontSize: '14px', color: '#64748B', lineHeight: '1.5', marginBottom: '20px' }}>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--canvas-bg)', padding: '24px' }}>
+        <div style={{ maxWidth: '440px', textAlign: 'center', backgroundColor: 'var(--surface-card)', padding: '32px', borderRadius: '4px', border: '1px solid var(--border-subtle)' }}>
+          <h2 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--ink-900)', marginBottom: '8px' }}>Internal Workspace Restricted</h2>
+          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.5', marginBottom: '20px' }}>
             Customer portal accounts cannot access the internal employee workspace. Please use your quotation link to view negotiations.
           </p>
           <button
             onClick={() => signOut({ callbackUrl: '/login' })}
             style={{
-              padding: '8px 16px',
-              backgroundColor: '#4F46E5',
+              padding: '7px 16px',
+              backgroundColor: 'var(--copper-500)',
               color: '#FFFFFF',
-              borderRadius: '6px',
+              borderRadius: '4px',
               border: 'none',
               fontSize: '13px',
-              fontWeight: 500,
+              fontWeight: 600,
               cursor: 'pointer',
+              transition: 'background-color 180ms ease',
             }}
           >
             Sign Out
@@ -81,13 +119,13 @@ export const InternalShell: React.FC<{ children: React.ReactNode; title?: string
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#FAFAFA' }}>
-      {/* Persistent Left Sidebar */}
+    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--canvas-bg)' }}>
+      {/* Persistent Left Sidebar — Ink-900 Dark Architecture */}
       <aside
         style={{
-          width: '220px',
-          backgroundColor: '#FFFFFF',
-          borderRight: '1px solid #E4E4E7',
+          width: '210px',
+          backgroundColor: 'var(--sidebar-bg)',
+          borderRight: '1px solid var(--sidebar-border)',
           display: 'flex',
           flexDirection: 'column',
           position: 'fixed',
@@ -100,73 +138,58 @@ export const InternalShell: React.FC<{ children: React.ReactNode; title?: string
         {/* Brand Header */}
         <div
           style={{
-            padding: '16px 20px',
-            borderBottom: '1px solid #E4E4E7',
+            padding: '14px 16px',
+            borderBottom: '1px solid var(--sidebar-border)',
             display: 'flex',
             alignItems: 'center',
+            gap: '10px',
           }}
         >
-          <Logo size={24} />
+          <div>
+            <Logo size={22} dark={true} />
+          </div>
+        </div>
+
+        {/* Dense Section Label */}
+        <div style={{ padding: '12px 14px 6px', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-400)' }}>
+          Operations Console
         </div>
 
         {/* Navigation Items */}
-        <nav style={{ flex: 1, padding: '12px 10px', overflowY: 'auto' }}>
+        <nav style={{ flex: 1, padding: '4px 0', overflowY: 'auto' }}>
           {visibleNavItems.map((item) => {
-            const Icon = item.icon
             const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
-
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  padding: '8px 12px',
-                  borderRadius: '6px',
-                  fontSize: '13px',
-                  fontWeight: isActive ? 600 : 500,
-                  color: isActive ? '#4F46E5' : '#71717A',
-                  backgroundColor: isActive ? '#EEF2FF' : 'transparent',
-                  marginBottom: '2px',
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                <Icon size={16} color={isActive ? '#4F46E5' : '#71717A'} />
-                <span>{item.label}</span>
-              </Link>
-            )
+            return <NavLink key={item.href} item={item} isActive={isActive} />
           })}
         </nav>
 
-        {/* User Info & Sign Out */}
-        <div style={{ padding: '14px 16px', borderTop: '1px solid #E4E4E7', backgroundColor: '#F8FAFC' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+        {/* User Info & Sign Out Footer */}
+        <div style={{ padding: '12px 14px', borderTop: '1px solid var(--sidebar-border)', backgroundColor: 'var(--ink-800)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '9px', marginBottom: '8px' }}>
             <div
               style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '50%',
-                backgroundColor: '#EEF2FF',
-                border: '1px solid #C7D2FE',
+                width: '28px',
+                height: '28px',
+                borderRadius: '3px',
+                backgroundColor: 'var(--ink-700)',
+                border: '1px solid var(--copper-500)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '12px',
+                fontSize: '11px',
                 fontWeight: 700,
-                color: '#4F46E5',
+                color: 'var(--copper-300)',
                 flexShrink: 0,
               }}
             >
               {(session?.user?.name || 'U').charAt(0).toUpperCase()}
             </div>
             <div style={{ overflow: 'hidden' }}>
-              <div style={{ fontSize: '13px', fontWeight: 600, color: '#0F172A', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+              <div style={{ fontSize: '12px', fontWeight: 600, color: '#FFFFFF', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
                 {session?.user?.name || 'Alex SalesRep'}
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
-                <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', backgroundColor: '#E0E7FF', color: '#3730A3', padding: '1px 6px', borderRadius: '4px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '1px' }}>
+                <span style={{ fontSize: '9.5px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', backgroundColor: 'rgba(192, 133, 82, 0.15)', color: 'var(--copper-300)', padding: '0 5px', borderRadius: '2px', border: '1px solid rgba(192, 133, 82, 0.3)' }}>
                   {session?.user?.role || 'REP'}
                 </span>
               </div>
@@ -178,60 +201,61 @@ export const InternalShell: React.FC<{ children: React.ReactNode; title?: string
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              fontSize: '12px',
+              fontSize: '11.5px',
               fontWeight: 500,
-              color: '#64748B',
+              color: 'var(--sidebar-text)',
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              padding: '4px 0',
-              transition: 'color 0.15s ease',
+              padding: '2px 0',
+              transition: 'color 180ms ease',
             }}
-            onMouseOver={(e) => (e.currentTarget.style.color = '#EF4444')}
-            onMouseOut={(e) => (e.currentTarget.style.color = '#64748B')}
+            onMouseOver={(e) => (e.currentTarget.style.color = 'var(--status-rejected)')}
+            onMouseOut={(e) => (e.currentTarget.style.color = 'var(--sidebar-text)')}
           >
-            <LogOut size={13} />
+            <LogOut size={12} />
             <span>Sign out</span>
           </button>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <div style={{ flex: 1, marginLeft: '220px', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+      <div style={{ flex: 1, marginLeft: '210px', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         {/* Quiet Top Bar */}
         <header
           style={{
-            height: '52px',
+            height: '46px',
             backgroundColor: '#FFFFFF',
-            borderBottom: '1px solid #E4E4E7',
+            borderBottom: '1px solid var(--border-subtle)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            padding: '0 24px',
+            padding: '0 20px',
             position: 'sticky',
             top: 0,
             zIndex: 40,
           }}
         >
-          <h1 style={{ fontSize: '15px', fontWeight: 600, color: '#18181B' }}>{activeTitle}</h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <h1 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--ink-900)', letterSpacing: '-0.01em' }}>{activeTitle}</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span
               style={{
                 fontSize: '11px',
-                padding: '2px 8px',
-                borderRadius: '10px',
-                backgroundColor: '#EEF2FF',
-                color: '#4F46E5',
-                fontWeight: 500,
+                padding: '2px 7px',
+                borderRadius: '3px',
+                backgroundColor: 'var(--status-pending-subtle)',
+                color: 'var(--copper-700)',
+                border: '1px solid var(--status-pending-border)',
+                fontWeight: 600,
               }}
             >
-              Demo Workspace
+              Enterprise Demo
             </span>
           </div>
         </header>
 
         {/* Page Body */}
-        <main style={{ flex: 1, padding: '24px' }}>{children}</main>
+        <main style={{ flex: 1, padding: '16px 20px' }}>{children}</main>
       </div>
     </div>
   )

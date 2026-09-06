@@ -33,7 +33,7 @@ export const Concept1Icon: React.FC<LogoProps> = ({
   className,
 }) => {
   const primary = color || (dark ? '#F8FAFC' : '#0F172A')
-  const accent = accentColor || '#4F46E5'
+  const accent = accentColor || '#C08552'
 
   return (
     <svg
@@ -87,8 +87,8 @@ export const Concept1Lockup: React.FC<LockupProps> = ({
   accentTextColor,
   className,
 }) => {
-  const textColor = wordmarkColor || (dark ? '#F8FAFC' : '#0F172A')
-  const numColor = accentTextColor || '#4F46E5'
+  const textColor = wordmarkColor || (dark ? '#F8FAFC' : '#10192B')
+  const numColor = accentTextColor || '#C08552'
 
   return (
     <div

@@ -87,13 +87,15 @@ export default function FulfillmentPage() {
               <TableBody>
                 {orders.map((ord) => (
                   <TableRow key={ord.id} onClick={() => router.push(`/fulfillment/${ord.id}`)}>
-                    <TableCell style={{ fontWeight: 600, color: '#4F46E5' }}>#{formatDisplayId(ord.id)}</TableCell>
-                    <TableCell style={{ fontWeight: 500 }}>{ord.customer?.name}</TableCell>
-                    <TableCell>{ord.lines?.length || 0} line items</TableCell>
+                    <TableCell style={{ fontWeight: 700, color: 'var(--ink-900)', fontFamily: 'ui-monospace, monospace', fontSize: '12px' }}>
+                      #{formatDisplayId(ord.id)}
+                    </TableCell>
+                    <TableCell style={{ fontWeight: 600, color: 'var(--ink-900)' }}>{ord.customer?.name}</TableCell>
+                    <TableCell style={{ color: 'var(--text-secondary)' }}>{ord.lines?.length || 0} items</TableCell>
                     <TableCell>
                       <Badge variant="warning">Awaiting Split</Badge>
                     </TableCell>
-                    <TableCell style={{ color: '#4F46E5', fontWeight: 600 }}>Manage Split →</TableCell>
+                    <TableCell style={{ color: 'var(--copper-500)', fontWeight: 600 }}>Manage Split →</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

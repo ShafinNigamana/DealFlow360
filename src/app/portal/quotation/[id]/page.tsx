@@ -122,7 +122,7 @@ export default function CustomerPortalPage({ params }: { params: Promise<{ id: s
           </p>
           <button
             onClick={() => router.push('/login')}
-            style={{ padding: '8px 16px', backgroundColor: '#4F46E5', color: '#FFF', borderRadius: '6px', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: 500 }}
+            style={{ padding: '7px 16px', backgroundColor: 'var(--copper-500)', color: '#FFF', borderRadius: '4px', border: 'none', cursor: 'pointer', fontSize: '12.5px', fontWeight: 600 }}
           >
             Return to Sign In
           </button>
@@ -133,27 +133,27 @@ export default function CustomerPortalPage({ params }: { params: Promise<{ id: s
 
   return (
     <PortalShell customerName={quote?.customer?.name}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {/* Quotation Header Banner */}
-        <Card style={{ padding: '24px' }}>
+        <Card style={{ padding: '16px 20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <h1 style={{ fontSize: '20px', fontWeight: 600, color: '#18181B' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h1 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--ink-900)' }}>
                   Quotation Proposal #{formatDisplayId(quotationId)}
                 </h1>
                 <Badge variant={quote?.status === 'APPROVED' ? 'success' : 'warning'}>
                   {quote?.status === 'SENT' ? 'Under Negotiation' : quote?.status}
                 </Badge>
               </div>
-              <p style={{ fontSize: '13px', color: '#71717A', marginTop: '6px' }}>
-                Prepared for <strong style={{ color: '#18181B' }}>{quote?.customer?.name}</strong> • Prepared by Sales Representative {quote?.rep?.name}
+              <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                Prepared for <strong style={{ color: 'var(--ink-900)' }}>{quote?.customer?.name}</strong> • Prepared by Sales Representative {quote?.rep?.name}
               </p>
             </div>
 
             <div style={{ textAlign: 'right' }}>
-              <span style={{ fontSize: '12px', color: '#71717A' }}>Total Amount</span>
-              <div style={{ fontSize: '24px', fontWeight: 700, color: '#4F46E5' }}>
+              <span style={{ fontSize: '11px', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em' }}>Total Amount</span>
+              <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--ink-900)', fontVariantNumeric: 'tabular-nums' }}>
                 ${subtotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
               </div>
             </div>

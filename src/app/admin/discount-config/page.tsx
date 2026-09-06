@@ -68,7 +68,7 @@ export default function DiscountConfigPage() {
                   {tierCeilings.map((tc) => (
                     <TableRow key={tc.id}>
                       <TableCell style={{ fontWeight: 600 }}>{tc.tier?.name || 'Tier'}</TableCell>
-                      <TableCell style={{ color: '#4F46E5', fontWeight: 600 }}>
+                      <TableCell style={{ color: 'var(--copper-700)', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
                         {Number(tc.maxDiscountPercent)}%
                       </TableCell>
                     </TableRow>

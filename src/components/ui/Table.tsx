@@ -1,4 +1,6 @@
-import React from 'react'
+'use client'
+
+import React, { useState } from 'react'
 
 export const Table: React.FC<{ children: React.ReactNode; style?: React.CSSProperties }> = ({
   children,
@@ -10,7 +12,7 @@ export const Table: React.FC<{ children: React.ReactNode; style?: React.CSSPrope
         width: '100%',
         borderCollapse: 'collapse',
         textAlign: 'left',
-        fontSize: '13px',
+        fontSize: '12.5px',
         ...style,
       }}
     >
@@ -20,23 +22,26 @@ export const Table: React.FC<{ children: React.ReactNode; style?: React.CSSPrope
 )
 
 export const TableHead: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <thead style={{ borderBottom: '1px solid #E4E4E7', backgroundColor: '#FAFAFA' }}>
+  <thead style={{ borderBottom: '1px solid var(--border-subtle)', backgroundColor: 'var(--neutral-100)' }}>
     {children}
   </thead>
 )
 
-export const TableHeaderCell: React.FC<{ children: React.ReactNode; style?: React.CSSProperties }> = ({
-  children,
-  style,
-}) => (
+export const TableHeaderCell: React.FC<{
+  children: React.ReactNode
+  align?: 'left' | 'right' | 'center'
+  style?: React.CSSProperties
+}> = ({ children, align = 'left', style }) => (
   <th
     style={{
-      padding: '10px 12px',
-      fontSize: '11px',
-      fontWeight: 600,
-      color: '#71717A',
+      padding: '7px 10px',
+      fontSize: '10.5px',
+      fontWeight: 700,
+      color: 'var(--text-secondary)',
       textTransform: 'uppercase',
       letterSpacing: '0.05em',
+      textAlign: align,
+      whiteSpace: 'nowrap',
       ...style,
     }}
   >
@@ -52,25 +57,49 @@ export const TableRow: React.FC<{
   children: React.ReactNode
   onClick?: () => void
   style?: React.CSSProperties
-}> = ({ children, onClick, style }) => (
-  <tr
-    onClick={onClick}
+}> = ({ children, onClick, style }) => {
+  const [isHovered, setIsHovered] = useState(false)
+
+  return (
+    <tr
+      onClick={onClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={(e) => {
+        if (onClick && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault()
+          onClick()
+        }
+      }}
+      style={{
+        borderBottom: '1px solid var(--border-subtle)',
+        cursor: onClick ? 'pointer' : 'default',
+        backgroundColor: isHovered && onClick ? 'var(--neutral-100)' : 'transparent',
+        transition: 'background-color 180ms cubic-bezier(0.4, 0, 0.2, 1)',
+        outline: 'none',
+        ...style,
+      }}
+    >
+      {children}
+    </tr>
+  )
+}
+
+export const TableCell: React.FC<{
+  children: React.ReactNode
+  align?: 'left' | 'right' | 'center'
+  style?: React.CSSProperties
+}> = ({ children, align = 'left', style }) => (
+  <td
     style={{
-      borderBottom: '1px solid #F4F4F5',
-      cursor: onClick ? 'pointer' : 'default',
-      transition: 'background-color 0.15s ease',
+      padding: '8px 10px',
+      color: 'var(--ink-900)',
+      verticalAlign: 'middle',
+      textAlign: align,
       ...style,
     }}
   >
-    {children}
-  </tr>
-)
-
-export const TableCell: React.FC<{ children: React.ReactNode; style?: React.CSSProperties }> = ({
-  children,
-  style,
-}) => (
-  <td style={{ padding: '12px', color: '#18181B', verticalAlign: 'middle', ...style }}>
     {children}
   </td>
 )

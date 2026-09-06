@@ -28,13 +28,14 @@ export const PortalShell: React.FC<{ children: React.ReactNode; customerName?: s
             <Logo size={24} />
             <span
               style={{
-                fontSize: '12px',
-                fontWeight: 600,
-                color: '#6366F1',
-                backgroundColor: '#EEF2FF',
-                padding: '2px 8px',
-                borderRadius: '4px',
-                letterSpacing: '0.02em',
+                fontSize: '11px',
+                fontWeight: 700,
+                color: 'var(--copper-700)',
+                backgroundColor: 'var(--status-pending-subtle)',
+                border: '1px solid var(--status-pending-border)',
+                padding: '1px 7px',
+                borderRadius: '3px',
+                letterSpacing: '0.04em',
                 marginLeft: '6px',
               }}
             >
@@ -45,7 +46,7 @@ export const PortalShell: React.FC<{ children: React.ReactNode; customerName?: s
           <nav style={{ display: 'flex', gap: '16px' }}>
             <Link
               href="#"
-              style={{ fontSize: '13px', fontWeight: 600, color: '#4F46E5', padding: '4px 8px' }}
+              style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--copper-500)', padding: '4px 8px' }}
             >
               My Quotation
             </Link>

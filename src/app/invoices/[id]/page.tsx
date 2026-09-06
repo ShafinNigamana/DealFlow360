@@ -146,11 +146,15 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
               <TableBody>
                 {invoice.payments.map((p) => (
                   <TableRow key={p.id}>
-                    <TableCell style={{ fontWeight: 600, color: '#4F46E5' }}>#{formatDisplayId(p.id)}</TableCell>
-                    <TableCell>{p.method}</TableCell>
-                    <TableCell style={{ color: '#15803D', fontWeight: 600 }}>${Number(p.amount).toFixed(2)}</TableCell>
-                    <TableCell style={{ color: '#71717A', fontSize: '12px' }}>
-                      {new Date(p.paidAt).toLocaleDateString()}
+                    <TableCell style={{ fontWeight: 700, color: 'var(--ink-900)', fontFamily: 'ui-monospace, monospace', fontSize: '12px' }}>
+                      #{formatDisplayId(p.id)}
+                    </TableCell>
+                    <TableCell style={{ color: 'var(--ink-900)' }}>{p.method}</TableCell>
+                    <TableCell style={{ color: 'var(--status-approved)', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
+                      ${Number(p.amount).toFixed(2)}
+                    </TableCell>
+                    <TableCell style={{ color: 'var(--text-secondary)', fontSize: '11.5px', fontVariantNumeric: 'tabular-nums' }}>
+                      {new Date(p.paidAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                     </TableCell>
                   </TableRow>
                 ))}

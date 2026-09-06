@@ -5,7 +5,13 @@ import { NextResponse } from 'next/server'
 
 // GET /api/quotations — List quotations (filtered by role / query params)
 export async function GET(req: Request) {
-  const { errorResponse, session } = await requireAuth([UserRole.REP, UserRole.MANAGER, UserRole.FINANCE, UserRole.ADMIN])
+  const { errorResponse, session } = await requireAuth([
+    'REP',
+    'MANAGER',
+    'FINANCE',
+    'ADMIN',
+    'CUSTOMER',
+  ])
   if (errorResponse) return errorResponse
 
   try {
@@ -17,8 +23,10 @@ export async function GET(req: Request) {
     const where: any = {}
 
     // Role-based visibility scoping
-    if (session.user.role === UserRole.REP) {
+    if (session.user.role === 'REP') {
       where.repId = session.user.id
+    } else if (session.user.role === 'CUSTOMER') {
+      where.customerId = session.user.id
     } else if (repId) {
       where.repId = repId
     }

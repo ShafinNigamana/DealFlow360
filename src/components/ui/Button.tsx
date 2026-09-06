@@ -1,4 +1,6 @@
-import React from 'react'
+'use client'
+
+import React, { useState } from 'react'
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'danger' | 'ghost'
@@ -16,46 +18,49 @@ export const Button: React.FC<ButtonProps> = ({
   style = {},
   ...props
 }) => {
+  const [isHovered, setIsHovered] = useState(false)
+
   const baseStyle: React.CSSProperties = {
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
     gap: '6px',
-    fontWeight: 500,
-    borderRadius: '6px',
+    fontWeight: 600,
+    borderRadius: '4px',
     cursor: disabled || isLoading ? 'not-allowed' : 'pointer',
     opacity: disabled || isLoading ? 0.6 : 1,
-    transition: 'all 0.15s ease',
+    transition: 'all 180ms cubic-bezier(0.4, 0, 0.2, 1)',
     border: '1px solid transparent',
     outline: 'none',
-    fontSize: size === 'sm' ? '12px' : size === 'lg' ? '15px' : '13px',
-    padding: size === 'sm' ? '4px 10px' : size === 'lg' ? '10px 20px' : '7px 14px',
+    fontSize: size === 'sm' ? '12px' : size === 'lg' ? '14px' : '13px',
+    padding: size === 'sm' ? '4px 10px' : size === 'lg' ? '9px 18px' : '6px 14px',
+    letterSpacing: '-0.01em',
   }
 
   let variantStyle: React.CSSProperties = {}
 
   if (variant === 'primary') {
     variantStyle = {
-      backgroundColor: '#4F46E5',
+      backgroundColor: isHovered && !disabled && !isLoading ? 'var(--copper-700)' : 'var(--copper-500)',
       color: '#FFFFFF',
-      borderColor: '#4F46E5',
+      borderColor: isHovered && !disabled && !isLoading ? 'var(--copper-700)' : 'var(--copper-500)',
     }
   } else if (variant === 'secondary') {
     variantStyle = {
-      backgroundColor: '#FFFFFF',
-      color: '#18181B',
-      borderColor: '#E4E4E7',
+      backgroundColor: isHovered && !disabled && !isLoading ? 'var(--neutral-100)' : '#FFFFFF',
+      color: 'var(--ink-900)',
+      borderColor: isHovered && !disabled && !isLoading ? 'var(--neutral-300)' : 'var(--neutral-200)',
     }
   } else if (variant === 'danger') {
     variantStyle = {
-      backgroundColor: '#FFFFFF',
-      color: '#B91C1C',
-      borderColor: '#FECACA',
+      backgroundColor: isHovered && !disabled && !isLoading ? 'var(--status-rejected-subtle)' : '#FFFFFF',
+      color: 'var(--status-rejected)',
+      borderColor: 'var(--status-rejected-border)',
     }
   } else if (variant === 'ghost') {
     variantStyle = {
-      backgroundColor: 'transparent',
-      color: '#71717A',
+      backgroundColor: isHovered && !disabled && !isLoading ? 'var(--neutral-100)' : 'transparent',
+      color: 'var(--text-secondary)',
       borderColor: 'transparent',
     }
   }
@@ -63,6 +68,8 @@ export const Button: React.FC<ButtonProps> = ({
   return (
     <button
       disabled={disabled || isLoading}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       style={{ ...baseStyle, ...variantStyle, ...style }}
       {...props}
     >

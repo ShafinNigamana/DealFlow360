@@ -34,7 +34,13 @@ export default function LoginPage() {
         return
       }
 
-      router.push('/dashboard')
+      const sessionRes = await fetch('/api/auth/session')
+      const sessionData = await sessionRes.json()
+      if (sessionData?.user?.role === 'CUSTOMER') {
+        router.push('/portal')
+      } else {
+        router.push('/dashboard')
+      }
     } catch (err: any) {
       setError(err.message || 'An error occurred during login')
       setIsLoading(false)
@@ -143,6 +149,13 @@ export default function LoginPage() {
                 style={{ background: 'none', border: 'none', cursor: 'pointer' }}
               >
                 <Badge variant="neutral">Admin</Badge>
+              </button>
+              <button
+                type="button"
+                onClick={() => fillQuickUser('contact@acme.com')}
+                style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+              >
+                <Badge variant="accent">Customer (Acme)</Badge>
               </button>
             </div>
           </div>

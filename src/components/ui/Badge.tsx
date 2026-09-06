@@ -9,26 +9,26 @@ interface BadgeProps {
 }
 
 export const Badge: React.FC<BadgeProps> = ({ children, variant = 'neutral', style }) => {
-  let bg = '#F4F4F5'
-  let color = '#71717A'
-  let border = '#E4E4E7'
+  let bg = 'var(--neutral-100)'
+  let color = 'var(--text-secondary)'
+  let border = 'var(--neutral-200)'
 
   if (variant === 'success') {
-    bg = '#F0FDF4'
-    color = '#15803D'
-    border = '#DCFCE7'
+    bg = 'var(--status-approved-subtle)'
+    color = 'var(--status-approved)'
+    border = 'var(--status-approved-border)'
   } else if (variant === 'warning') {
-    bg = '#FFFBEB'
-    color = '#B45309'
-    border = '#FEF3C7'
+    bg = 'var(--status-pending-subtle)'
+    color = 'var(--copper-700)'
+    border = 'var(--status-pending-border)'
   } else if (variant === 'danger') {
-    bg = '#FEF2F2'
-    color = '#B91C1C'
-    border = '#FEE2E2'
+    bg = 'var(--status-rejected-subtle)'
+    color = 'var(--status-rejected)'
+    border = 'var(--status-rejected-border)'
   } else if (variant === 'accent') {
-    bg = '#EEF2FF'
-    color = '#4F46E5'
-    border = '#E0E7FF'
+    bg = 'var(--status-pending-subtle)'
+    color = 'var(--copper-700)'
+    border = 'var(--status-pending-border)'
   }
 
   return (
@@ -37,14 +37,15 @@ export const Badge: React.FC<BadgeProps> = ({ children, variant = 'neutral', sty
         display: 'inline-flex',
         alignItems: 'center',
         padding: '2px 8px',
-        borderRadius: '12px',
+        borderRadius: '3px',
         fontSize: '11px',
-        fontWeight: 500,
+        fontWeight: 600,
         backgroundColor: bg,
         color: color,
         border: `1px solid ${border}`,
         lineHeight: 1.3,
         whiteSpace: 'nowrap',
+        letterSpacing: '0.01em',
         ...style,
       }}
     >

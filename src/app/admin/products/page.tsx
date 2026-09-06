@@ -93,8 +93,8 @@ export default function AdminProductsPage() {
             </div>
           </Card>
           <Card>
-            <span style={{ fontSize: '12px', color: '#71717A', fontWeight: 500 }}>Configured Pricelists</span>
-            <div style={{ fontSize: '24px', fontWeight: 700, color: '#4F46E5', marginTop: '4px' }}>
+            <span style={{ fontSize: '10.5px', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Configured Pricelists</span>
+            <div style={{ fontSize: '26px', fontWeight: 800, color: 'var(--copper-600)', marginTop: '4px' }}>
               Active (USD)
             </div>
           </Card>
@@ -102,8 +102,8 @@ export default function AdminProductsPage() {
 
         {/* Action Header */}
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <Button variant="primary" onClick={() => setIsModalOpen(true)}>
-            <Plus size={14} /> Add Product
+          <Button variant="primary" size="sm" onClick={() => setIsModalOpen(true)}>
+            <Plus size={13} /> Add Product
           </Button>
         </div>
 
@@ -111,7 +111,7 @@ export default function AdminProductsPage() {
         <Card style={{ padding: 0 }}>
           <CardHeader title="Product Catalog & Base Pricing" />
           {isLoading ? (
-            <div style={{ padding: '24px', textAlign: 'center', color: '#71717A', fontSize: '13px' }}>
+            <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '12.5px' }}>
               Loading product catalog...
             </div>
           ) : (
@@ -120,7 +120,7 @@ export default function AdminProductsPage() {
                 <TableRow>
                   <TableHeaderCell>Product Name</TableHeaderCell>
                   <TableHeaderCell>Category</TableHeaderCell>
-                  <TableHeaderCell>Base Price</TableHeaderCell>
+                  <TableHeaderCell align="right">Base Price</TableHeaderCell>
                   <TableHeaderCell>Unit</TableHeaderCell>
                   <TableHeaderCell>Variants</TableHeaderCell>
                   <TableHeaderCell>Status</TableHeaderCell>
@@ -129,9 +129,9 @@ export default function AdminProductsPage() {
               <TableBody>
                 {products.map((prod) => (
                   <TableRow key={prod.id}>
-                    <TableCell style={{ fontWeight: 600 }}>
+                    <TableCell style={{ fontWeight: 600, color: 'var(--ink-900)' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <Package size={16} color="#4F46E5" />
+                        <Package size={14} color="var(--copper-500)" />
                         {prod.name}
                       </div>
                     </TableCell>

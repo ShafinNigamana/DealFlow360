@@ -4,12 +4,12 @@ import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { InternalShell } from '@/components/shell/InternalShell'
 import { RoleGuard } from '@/components/auth/RoleGuard'
-import { Card, CardHeader } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
+import { Button } from '@/components/ui/Button'
 import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from '@/components/ui/Table'
 import { DealAlertDTO } from '@/types/api-contracts'
-import { AlertCircle, Clock, AlertTriangle } from 'lucide-react'
+import { Bell, ArrowUpRight } from 'lucide-react'
 import { formatDisplayId } from '@/lib/formatters'
 
 export default function DealHealthPage() {
@@ -21,8 +21,10 @@ export default function DealHealthPage() {
     setIsLoading(true)
     try {
       const res = await fetch('/api/deal-alerts')
-      if (res.ok) setAlerts(await res.json())
-    } catch (err: any) {
+      if (res.ok) {
+        setAlerts(await res.json())
+      }
+    } catch (err) {
       console.error(err)
     } finally {
       setIsLoading(false)
@@ -33,14 +35,13 @@ export default function DealHealthPage() {
     fetchAlerts()
   }, [])
 
-  const handleUpdateAlertStatus = async (alertId: string, status: 'ACKNOWLEDGED' | 'ESCALATED') => {
+  const handleUpdateAlertStatus = async (alertId: string, status: 'ACKNOWLEDGED' | 'RESOLVED') => {
     try {
       const res = await fetch(`/api/deal-alerts/${alertId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),
       })
-
       if (!res.ok) throw new Error('Failed to update alert')
       fetchAlerts()
     } catch (err: any) {
@@ -48,120 +49,152 @@ export default function DealHealthPage() {
     }
   }
 
-  const stalledCount = alerts.filter((a) => a.type === 'STALLED').length
-  const anomalyCount = alerts.filter((a) => a.type === 'ANOMALY').length
-  const slippageCount = alerts.filter((a) => a.type === 'SLIPPAGE').length
+  const stalledCount = alerts.filter((a) => a.type === 'STALLED' && a.status === 'OPEN').length
+  const anomalyCount = alerts.filter((a) => a.type === 'ANOMALY' && a.status === 'OPEN').length
+  const slippageCount = alerts.filter((a) => a.type === 'SLIPPAGE' && a.status === 'OPEN').length
 
   return (
-    <InternalShell title="Deal Health & Anomaly Monitoring">
+    <InternalShell title="Deal Health & Risk Anomalies">
       <RoleGuard allowedRoles={['MANAGER']}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        {/* Three Alert Summary Tiles */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
-          <Card>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div>
-                <span style={{ fontSize: '12px', color: '#71717A', fontWeight: 500 }}>Stalled Deals</span>
-                <div style={{ fontSize: '24px', fontWeight: 700, color: '#18181B', marginTop: '4px' }}>
-                  {stalledCount}
-                </div>
-              </div>
-              <Clock size={20} color="#B45309" />
-            </div>
-          </Card>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          {/* Header Description */}
+          <div>
+            <h2 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--ink-900)' }}>
+              Proactive Deal Anomaly Monitoring
+            </h2>
+            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '1px' }}>
+              Detect stalled negotiations, discount ceiling anomalies, and fulfillment slippage before revenue impact
+            </p>
+          </div>
 
-          <Card>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div>
-                <span style={{ fontSize: '12px', color: '#71717A', fontWeight: 500 }}>Discount Anomalies</span>
-                <div style={{ fontSize: '24px', fontWeight: 700, color: '#18181B', marginTop: '4px' }}>
-                  {anomalyCount}
-                </div>
+          {/* Metric Cards (Dense technical containers) */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+            <div
+              style={{
+                backgroundColor: 'var(--surface-card)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: '4px',
+                padding: '12px 14px',
+              }}
+            >
+              <span style={{ fontSize: '10.5px', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                Stalled Pipeline Deals
+              </span>
+              <div style={{ fontSize: '26px', fontWeight: 800, color: stalledCount > 0 ? 'var(--copper-600)' : 'var(--ink-900)', marginTop: '4px', fontVariantNumeric: 'tabular-nums' }}>
+                {stalledCount}
               </div>
-              <AlertTriangle size={20} color="#B91C1C" />
             </div>
-          </Card>
 
-          <Card>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div>
-                <span style={{ fontSize: '12px', color: '#71717A', fontWeight: 500 }}>Delivery Slippage</span>
-                <div style={{ fontSize: '24px', fontWeight: 700, color: '#18181B', marginTop: '4px' }}>
-                  {slippageCount}
-                </div>
+            <div
+              style={{
+                backgroundColor: 'var(--surface-card)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: '4px',
+                padding: '12px 14px',
+              }}
+            >
+              <span style={{ fontSize: '10.5px', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                Discount Anomalies
+              </span>
+              <div style={{ fontSize: '26px', fontWeight: 800, color: anomalyCount > 0 ? 'var(--status-rejected)' : 'var(--ink-900)', marginTop: '4px', fontVariantNumeric: 'tabular-nums' }}>
+                {anomalyCount}
               </div>
-              <AlertCircle size={20} color="#4F46E5" />
             </div>
+
+            <div
+              style={{
+                backgroundColor: 'var(--surface-card)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: '4px',
+                padding: '12px 14px',
+              }}
+            >
+              <span style={{ fontSize: '10.5px', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                Delivery Slippage
+              </span>
+              <div style={{ fontSize: '26px', fontWeight: 800, color: slippageCount > 0 ? 'var(--status-info)' : 'var(--ink-900)', marginTop: '4px', fontVariantNumeric: 'tabular-nums' }}>
+                {slippageCount}
+              </div>
+            </div>
+          </div>
+
+          {/* Flagged Alerts Table */}
+          <Card style={{ padding: 0 }}>
+            {isLoading ? (
+              <div style={{ padding: '30px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '12.5px' }}>Loading alerts...</div>
+            ) : alerts.length === 0 ? (
+              <div style={{ padding: '30px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '12.5px' }}>No active deal alerts found.</div>
+            ) : (
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableHeaderCell style={{ width: '130px' }}>Quote Ref</TableHeaderCell>
+                    <TableHeaderCell>Account / Customer</TableHeaderCell>
+                    <TableHeaderCell>Anomaly Issue</TableHeaderCell>
+                    <TableHeaderCell>Status</TableHeaderCell>
+                    <TableHeaderCell align="right">Flagged Date</TableHeaderCell>
+                    <TableHeaderCell align="center" style={{ width: '220px' }}>Resolution Actions</TableHeaderCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {alerts.map((al) => (
+                    <TableRow key={al.id}>
+                      <TableCell style={{ fontWeight: 700, color: 'var(--ink-900)', fontFamily: 'ui-monospace, monospace', fontSize: '12px' }}>
+                        <span
+                          onClick={() => router.push(`/quotations/${al.quotationId}`)}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          #{formatDisplayId(al.quotationId)}
+                        </span>
+                      </TableCell>
+                      <TableCell style={{ fontWeight: 600, color: 'var(--ink-900)' }}>
+                        {al.quotation?.customer?.name || 'Customer'}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={al.type === 'ANOMALY' ? 'danger' : al.type === 'STALLED' ? 'warning' : 'neutral'}>
+                          {al.type?.replace('_', ' ')}
+                        </Badge>
+                      </TableCell>
+                      <TableCell style={{ color: 'var(--text-secondary)' }}>{al.status}</TableCell>
+                      <TableCell align="right" style={{ color: 'var(--text-secondary)', fontSize: '11.5px', fontVariantNumeric: 'tabular-nums' }}>
+                        {new Date(al.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                      </TableCell>
+                      <TableCell align="center">
+                        <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
+                          {al.status === 'OPEN' && (
+                            <>
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => handleUpdateAlertStatus(al.id, 'ACKNOWLEDGED')}
+                              >
+                                Acknowledge
+                              </Button>
+                              <Button
+                                variant="primary"
+                                size="sm"
+                                onClick={() => handleUpdateAlertStatus(al.id, 'RESOLVED')}
+                              >
+                                Resolve
+                              </Button>
+                            </>
+                          )}
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => router.push(`/quotations/${al.quotationId}`)}
+                          >
+                            <ArrowUpRight size={11} /> Open
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </Card>
         </div>
-
-        {/* Flagged Alerts Table */}
-        <Card style={{ padding: 0 }}>
-          <CardHeader title="Automated Deal Anomaly & Risk Alerts" />
-          {isLoading ? (
-            <div style={{ padding: '24px', textAlign: 'center', color: '#71717A', fontSize: '13px' }}>Loading alerts...</div>
-          ) : alerts.length === 0 ? (
-            <div style={{ padding: '24px', textAlign: 'center', color: '#71717A', fontSize: '13px' }}>No active deal alerts found.</div>
-          ) : (
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableHeaderCell>Deal / Quote ID</TableHeaderCell>
-                  <TableHeaderCell>Customer</TableHeaderCell>
-                  <TableHeaderCell>Anomaly Issue</TableHeaderCell>
-                  <TableHeaderCell>Status</TableHeaderCell>
-                  <TableHeaderCell>Flagged Date</TableHeaderCell>
-                  <TableHeaderCell>Actions</TableHeaderCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {alerts.map((al) => (
-                  <TableRow key={al.id}>
-                    <TableCell style={{ fontWeight: 600, color: '#4F46E5' }}>
-                      #{formatDisplayId(al.quotationId)}
-                    </TableCell>
-                    <TableCell style={{ fontWeight: 500 }}>{al.quotation?.customer?.name || 'Customer'}</TableCell>
-                    <TableCell>
-                      <Badge variant={al.type === 'ANOMALY' ? 'danger' : al.type === 'STALLED' ? 'warning' : 'accent'}>
-                        {al.type}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{al.status}</TableCell>
-                    <TableCell style={{ color: '#71717A', fontSize: '12px' }}>
-                      {new Date(al.createdAt).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      <div style={{ display: 'flex', gap: '6px' }}>
-                        {al.status === 'OPEN' && (
-                          <>
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              onClick={() => handleUpdateAlertStatus(al.id, 'ACKNOWLEDGED')}
-                            >
-                              Nudge Rep
-                            </Button>
-                            <Button
-                              variant="danger"
-                              size="sm"
-                              onClick={() => handleUpdateAlertStatus(al.id, 'ESCALATED')}
-                            >
-                              Escalate
-                            </Button>
-                          </>
-                        )}
-                        {al.status !== 'OPEN' && (
-                          <span style={{ fontSize: '11px', color: '#71717A' }}>{al.status}</span>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </Card>
-      </div>
       </RoleGuard>
     </InternalShell>
   )

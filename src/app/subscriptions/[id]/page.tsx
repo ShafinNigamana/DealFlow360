@@ -180,7 +180,9 @@ export default function BillingDetailPage({ params }: { params: Promise<{ id: st
               <TableBody>
                 {sub.creditNotes.map((cn) => (
                   <TableRow key={cn.id}>
-                    <TableCell style={{ fontWeight: 600, color: '#4F46E5' }}>#{formatDisplayId(cn.id)}</TableCell>
+                    <TableCell style={{ fontWeight: 700, color: 'var(--ink-900)', fontFamily: 'ui-monospace, monospace', fontSize: '12px' }}>
+                      #{formatDisplayId(cn.id)}
+                    </TableCell>
                     <TableCell style={{ color: '#15803D', fontWeight: 600 }}>${Number(cn.amount).toFixed(2)}</TableCell>
                     <TableCell>{cn.reason}</TableCell>
                     <TableCell style={{ color: '#71717A', fontSize: '12px' }}>

@@ -40,7 +40,7 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({ allowedRoles, children, fa
               width: '18px',
               height: '18px',
               border: '2px solid #E2E8F0',
-              borderTopColor: '#4F46E5',
+              borderTopColor: 'var(--copper-500, #C08552)',
               borderRadius: '50%',
               animation: 'spin 0.8s linear infinite',
             }}
@@ -90,11 +90,11 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({ allowedRoles, children, fa
         >
           <ShieldAlert size={28} />
         </div>
-        <h2 style={{ fontSize: '18px', fontWeight: 600, color: '#0F172A', marginBottom: '8px' }}>
+        <h2 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--ink-900, #10192B)', marginBottom: '8px' }}>
           Access Restricted
         </h2>
         <p style={{ fontSize: '14px', color: '#64748B', maxWidth: '420px', lineHeight: '1.5', marginBottom: '20px' }}>
-          Your current role (<strong style={{ color: '#0F172A' }}>{userRole || 'UNKNOWN'}</strong>) does not have
+          Your current role (<strong style={{ color: 'var(--ink-900, #10192B)' }}>{userRole || 'UNKNOWN'}</strong>) does not have
           permission to access this section.
         </p>
         <button
@@ -110,9 +110,9 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({ allowedRoles, children, fa
             alignItems: 'center',
             gap: '8px',
             padding: '9px 16px',
-            backgroundColor: '#4F46E5',
+            backgroundColor: 'var(--copper-500, #C08552)',
             color: '#FFFFFF',
-            borderRadius: '6px',
+            borderRadius: '4px',
             fontSize: '13px',
             fontWeight: 500,
             border: 'none',

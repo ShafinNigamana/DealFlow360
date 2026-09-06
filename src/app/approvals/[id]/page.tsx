@@ -51,7 +51,6 @@ export default function ApprovalDetailPage({ params }: { params: Promise<{ id: s
   }, [quotationId])
 
   const handleDecision = async () => {
-    // Find pending approval entry
     const pendingApproval = quote?.approvals?.find((a) => a.status === 'PENDING')
     if (!pendingApproval) {
       alert('No pending approval step found for this quotation')
@@ -71,10 +70,10 @@ export default function ApprovalDetailPage({ params }: { params: Promise<{ id: s
 
       if (!res.ok) {
         const errJson = await res.json()
-        throw new Error(errJson.error || 'Failed to submit approval decision')
+        throw new Error(errJson.error || 'Failed to submit decision')
       }
 
-      setDecisionModal({ isOpen: false, action: 'APPROVE' })
+      setDecisionModal({ ...decisionModal, isOpen: false })
       setReason('')
       fetchQuoteDetail()
     } catch (err: any) {
@@ -84,7 +83,6 @@ export default function ApprovalDetailPage({ params }: { params: Promise<{ id: s
     }
   }
 
-  // Stepper Calculation
   const approvalSteps: StepItem[] = [
     { id: '1', label: 'Submitted', sublabel: 'Rep Creation' },
     { id: '2', label: 'Sales Manager', sublabel: 'Tier & Ceiling Check' },
@@ -93,192 +91,248 @@ export default function ApprovalDetailPage({ params }: { params: Promise<{ id: s
   ]
 
   const getCurrentStepIndex = () => {
-    if (!quote) return 0
-    if (quote.status === 'DRAFT') return 0
-    if (quote.status === 'PENDING_APPROVAL') return 1
-    if (quote.status === 'APPROVED' || quote.status === 'CONFIRMED') return 3
+    if (!quote) return 1
+    if (quote.status === 'APPROVED' || quote.status === 'CONFIRMED' || quote.status === 'SENT') return 3
+    if (quote.status === 'PENDING_APPROVAL') {
+      const pendingApproval = quote.approvals?.find((a) => a.status === 'PENDING')
+      if (pendingApproval?.level === 'MANAGER_THEN_FINANCE') return 2
+      return 1
+    }
     if (quote.status === 'REJECTED') return 1
     return 1
+  }
+
+  const getRiskScoreBadge = (scoreNum: number) => {
+    let bg = 'var(--status-approved-subtle)'
+    let color = 'var(--status-approved)'
+    let border = 'var(--status-approved-border)'
+    let label = 'Low'
+
+    if (scoreNum >= 25) {
+      bg = 'var(--status-rejected-subtle)'
+      color = 'var(--status-rejected)'
+      border = 'var(--status-rejected-border)'
+      label = 'High'
+    } else if (scoreNum >= 10) {
+      bg = 'var(--status-pending-subtle)'
+      color = 'var(--copper-700)'
+      border = 'var(--status-pending-border)'
+      label = 'Med'
+    }
+
+    return (
+      <span
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '6px',
+          padding: '4px 10px',
+          borderRadius: '3px',
+          fontSize: '13px',
+          fontWeight: 700,
+          backgroundColor: bg,
+          color: color,
+          border: `1px solid ${border}`,
+          fontVariantNumeric: 'tabular-nums',
+        }}
+      >
+        <span>{scoreNum.toFixed(1)}%</span>
+        <span style={{ fontSize: '9.5px', textTransform: 'uppercase', opacity: 0.85, fontWeight: 800 }}>
+          {label} Risk
+        </span>
+      </span>
+    )
   }
 
   return (
     <InternalShell title={`Approval Detail — #${formatDisplayId(quotationId)}`}>
       <RoleGuard allowedRoles={['MANAGER', 'FINANCE']}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           {/* Header Overview Card */}
           <Card>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#18181B' }}>
+                  <h2 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--ink-900)' }}>
                     {quote?.customer?.name || 'Customer Name'}
                   </h2>
                   <Badge variant={quote?.status === 'APPROVED' ? 'success' : quote?.status === 'PENDING_APPROVAL' ? 'warning' : 'danger'}>
-                  {quote?.status}
-                </Badge>
+                    {quote?.status?.replace('_', ' ')}
+                  </Badge>
+                </div>
+                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                  Customer Tier: <strong style={{ color: 'var(--ink-900)' }}>{quote?.customer?.tier?.name || 'Standard'}</strong> • Sales Rep: {quote?.rep?.name}
+                </p>
               </div>
-              <p style={{ fontSize: '12px', color: '#71717A', marginTop: '4px' }}>
-                Customer Tier: <strong style={{ color: '#18181B' }}>{quote?.customer?.tier?.name || 'Standard'}</strong> • Sales Rep: {quote?.rep?.name}
-              </p>
-            </div>
 
-            <div style={{ display: 'flex', gap: '12px' }}>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '11px', color: '#71717A', textTransform: 'uppercase' }}>Blended Risk Score</div>
-                <div style={{ fontSize: '18px', fontWeight: 700, color: Number(quote?.blendedRiskScore) > 20 ? '#B91C1C' : '#15803D' }}>
-                  {Number(quote?.blendedRiskScore || 0).toFixed(1)}%
+                <div style={{ fontSize: '10.5px', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em', marginBottom: '3px' }}>
+                  Blended Risk Score
+                </div>
+                <div>
+                  {getRiskScoreBadge(Number(quote?.blendedRiskScore || 0))}
                 </div>
               </div>
             </div>
-          </div>
-        </Card>
+          </Card>
 
-        {/* Approval Stepper Component */}
-        <Card>
-          <CardHeader title="Approval Governance Progress" />
-          <Stepper steps={approvalSteps} currentStepIndex={getCurrentStepIndex()} />
-        </Card>
+          {/* Approval Stepper Component */}
+          <Card>
+            <CardHeader title="Approval Governance Progress" />
+            <Stepper steps={approvalSteps} currentStepIndex={getCurrentStepIndex()} />
+          </Card>
 
-        {/* Why Flagged Breakdown Table */}
-        <Card style={{ padding: 0 }}>
-          <div style={{ padding: '14px 20px', borderBottom: '1px solid #E4E4E7', fontWeight: 600, fontSize: '14px' }}>
-            Why This Quote Was Flagged (Discount Overages)
-          </div>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableHeaderCell>Line Product</TableHeaderCell>
-                <TableHeaderCell>Category</TableHeaderCell>
-                <TableHeaderCell>Discount Given</TableHeaderCell>
-                <TableHeaderCell>Category Ceiling</TableHeaderCell>
-                <TableHeaderCell>Status</TableHeaderCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {quote?.lines?.map((line) => {
-                const disc = Number(line.unitDiscountPercent)
-                const isOver = disc > 15
-
-                return (
-                  <TableRow key={line.id}>
-                    <TableCell style={{ fontWeight: 500 }}>{line.product?.name}</TableCell>
-                    <TableCell>{line.product?.category?.name || 'Standard'}</TableCell>
-                    <TableCell style={{ fontWeight: isOver ? 600 : 400, color: isOver ? '#B91C1C' : '#18181B' }}>
-                      {disc}%
-                    </TableCell>
-                    <TableCell>15.0%</TableCell>
-                    <TableCell>
-                      {isOver ? <Badge variant="danger">Exceeds Limit</Badge> : <Badge variant="success">OK</Badge>}
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
-        </Card>
-
-        {/* Approval History Audit Trail */}
-        {quote?.approvals && quote.approvals.length > 0 && (
+          {/* Why Flagged Breakdown Table */}
           <Card style={{ padding: 0 }}>
-            <div style={{ padding: '14px 20px', borderBottom: '1px solid #E4E4E7', fontWeight: 600, fontSize: '14px' }}>
-              Approval History & Audit Trail
+            <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--border-subtle)', fontWeight: 700, fontSize: '12.5px', color: 'var(--ink-900)' }}>
+              Why This Quote Was Flagged (Discount Overages)
             </div>
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableHeaderCell>Approver</TableHeaderCell>
-                  <TableHeaderCell>Level</TableHeaderCell>
-                  <TableHeaderCell>Action/Status</TableHeaderCell>
-                  <TableHeaderCell>Reason / Note</TableHeaderCell>
-                  <TableHeaderCell>Date</TableHeaderCell>
+                  <TableHeaderCell>Line Product</TableHeaderCell>
+                  <TableHeaderCell>Category</TableHeaderCell>
+                  <TableHeaderCell align="right">Discount Given</TableHeaderCell>
+                  <TableHeaderCell align="right">Category Ceiling</TableHeaderCell>
+                  <TableHeaderCell align="center">Status</TableHeaderCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {quote.approvals.map((app) => (
-                  <TableRow key={app.id}>
-                    <TableCell style={{ fontWeight: 500 }}>{app.approver?.name || 'Assigned Approver'}</TableCell>
-                    <TableCell>{app.level}</TableCell>
-                    <TableCell>
-                      <Badge variant={app.status === 'APPROVED' ? 'success' : app.status === 'PENDING' ? 'warning' : 'danger'}>
-                        {app.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{app.reason || '—'}</TableCell>
-                    <TableCell style={{ color: '#71717A', fontSize: '12px' }}>
-                      {new Date(app.createdAt).toLocaleDateString()}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {quote?.lines?.map((line) => {
+                  const disc = Number(line.unitDiscountPercent)
+                  const isOver = disc > 15
+
+                  return (
+                    <TableRow key={line.id}>
+                      <TableCell style={{ fontWeight: 600, color: 'var(--ink-900)' }}>{line.product?.name}</TableCell>
+                      <TableCell style={{ color: 'var(--text-secondary)' }}>{line.product?.category?.name || 'Standard'}</TableCell>
+                      <TableCell
+                        align="right"
+                        style={{
+                          fontWeight: isOver ? 700 : 500,
+                          color: isOver ? 'var(--status-rejected)' : 'var(--ink-900)',
+                          fontVariantNumeric: 'tabular-nums',
+                        }}
+                      >
+                        {disc}%
+                      </TableCell>
+                      <TableCell align="right" style={{ fontVariantNumeric: 'tabular-nums', color: 'var(--text-secondary)' }}>15.0%</TableCell>
+                      <TableCell align="center">
+                        {isOver ? <Badge variant="danger">Exceeds Limit</Badge> : <Badge variant="success">OK</Badge>}
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
               </TableBody>
             </Table>
           </Card>
-        )}
 
-        {/* Action Controls Footer */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', paddingTop: '10px' }}>
-          <Button variant="secondary" onClick={() => router.push('/approvals')}>
-            Back to Approvals
-          </Button>
-
-          {quote?.status === 'PENDING_APPROVAL' && (
-            <>
-              <Button
-                variant="danger"
-                onClick={() => setDecisionModal({ isOpen: true, action: 'REJECT' })}
-              >
-                <XCircle size={14} /> Reject
-              </Button>
-
-              <Button
-                variant="secondary"
-                onClick={() => setDecisionModal({ isOpen: true, action: 'RETURN' })}
-              >
-                <RotateCcw size={14} /> Return for Revision
-              </Button>
-
-              <Button
-                variant="primary"
-                onClick={() => setDecisionModal({ isOpen: true, action: 'APPROVE' })}
-              >
-                <CheckCircle size={14} /> Approve Quotation
-              </Button>
-            </>
+          {/* Approval History Audit Trail */}
+          {quote?.approvals && quote.approvals.length > 0 && (
+            <Card style={{ padding: 0 }}>
+              <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--border-subtle)', fontWeight: 700, fontSize: '12.5px', color: 'var(--ink-900)' }}>
+                Approval History & Audit Trail
+              </div>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableHeaderCell>Approver</TableHeaderCell>
+                    <TableHeaderCell>Level</TableHeaderCell>
+                    <TableHeaderCell>Action/Status</TableHeaderCell>
+                    <TableHeaderCell>Reason / Note</TableHeaderCell>
+                    <TableHeaderCell align="right">Date</TableHeaderCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {quote.approvals.map((app) => (
+                    <TableRow key={app.id}>
+                      <TableCell style={{ fontWeight: 600, color: 'var(--ink-900)' }}>{app.approver?.name || 'Assigned Approver'}</TableCell>
+                      <TableCell style={{ color: 'var(--text-secondary)' }}>{app.level}</TableCell>
+                      <TableCell>
+                        <Badge variant={app.status === 'APPROVED' ? 'success' : app.status === 'PENDING' ? 'warning' : 'danger'}>
+                          {app.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell style={{ color: 'var(--ink-900)' }}>{app.reason || '—'}</TableCell>
+                      <TableCell align="right" style={{ color: 'var(--text-secondary)', fontSize: '11.5px', fontVariantNumeric: 'tabular-nums' }}>
+                        {new Date(app.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Card>
           )}
-        </div>
 
-        {/* Decision Reason Modal */}
-        <Modal
-          isOpen={decisionModal.isOpen}
-          onClose={() => setDecisionModal({ ...decisionModal, isOpen: false })}
-          title={`Confirm ${decisionModal.action} Action`}
-          footer={
-            <>
-              <Button variant="secondary" onClick={() => setDecisionModal({ ...decisionModal, isOpen: false })}>
-                Cancel
-              </Button>
-              <Button
-                variant={decisionModal.action === 'REJECT' ? 'danger' : 'primary'}
-                onClick={handleDecision}
-                isLoading={isSubmitting}
-              >
-                Submit Decision
-              </Button>
-            </>
-          }
-        >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <Input
-              label="Reason / Audit Note (Optional)"
-              placeholder="e.g. Approved per VP discount exception policy"
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-            />
-            <p style={{ fontSize: '12px', color: '#71717A' }}>
-              Your decision will be recorded in the append-only audit trail and update the quotation status immediately.
-            </p>
+          {/* Action Controls Footer */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', paddingTop: '6px' }}>
+            <Button variant="secondary" size="sm" onClick={() => router.push('/approvals')}>
+              Back to Approvals
+            </Button>
+
+            {quote?.status === 'PENDING_APPROVAL' && (
+              <>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={() => setDecisionModal({ isOpen: true, action: 'REJECT' })}
+                >
+                  <XCircle size={13} /> Reject
+                </Button>
+
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setDecisionModal({ isOpen: true, action: 'RETURN' })}
+                >
+                  <RotateCcw size={13} /> Return for Revision
+                </Button>
+
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => setDecisionModal({ isOpen: true, action: 'APPROVE' })}
+                >
+                  <CheckCircle size={13} /> Approve Quotation
+                </Button>
+              </>
+            )}
           </div>
-        </Modal>
-      </div>
+
+          {/* Decision Reason Modal */}
+          <Modal
+            isOpen={decisionModal.isOpen}
+            onClose={() => setDecisionModal({ ...decisionModal, isOpen: false })}
+            title={`Confirm ${decisionModal.action} Action`}
+            footer={
+              <>
+                <Button variant="secondary" size="sm" onClick={() => setDecisionModal({ ...decisionModal, isOpen: false })}>
+                  Cancel
+                </Button>
+                <Button
+                  variant={decisionModal.action === 'REJECT' ? 'danger' : 'primary'}
+                  size="sm"
+                  onClick={handleDecision}
+                  isLoading={isSubmitting}
+                >
+                  Submit Decision
+                </Button>
+              </>
+            }
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <Input
+                label="Reason / Audit Note (Optional)"
+                placeholder="e.g. Approved per VP discount exception policy"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+              />
+              <p style={{ fontSize: '11.5px', color: 'var(--text-secondary)' }}>
+                Your decision will be recorded in the append-only audit trail and update the quotation status immediately.
+              </p>
+            </div>
+          </Modal>
+        </div>
       </RoleGuard>
     </InternalShell>
   )
