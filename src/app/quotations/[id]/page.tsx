@@ -41,14 +41,17 @@ export default function QuotationDetailPage({ params }: { params: Promise<{ id: 
 
   const handleSendReply = async () => {
     if (!replyText.trim()) return
+    if (userRole !== 'REP') {
+      alert('Only the assigned Sales Representative can chat with the customer.')
+      return
+    }
     setIsSendingReply(true)
     try {
-      const authorType = userRole === 'MANAGER' ? 'MANAGER' : 'REP'
       const res = await fetch(`/api/quotations/${quotationId}/negotiations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          authorType,
+          authorType: 'REP',
           comment: replyText.trim(),
         }),
       })
@@ -587,33 +590,54 @@ export default function QuotationDetailPage({ params }: { params: Promise<{ id: 
               )}
             </div>
 
-            {/* Staff Reply Box */}
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', borderTop: '1px solid var(--border-subtle)', paddingTop: '12px' }}>
-              <input
-                type="text"
-                placeholder={`Reply to ${quote?.customer?.name || 'customer'}...`}
-                value={replyText}
-                onChange={(e) => setReplyText(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault()
-                    handleSendReply()
-                  }
-                }}
+            {/* Staff Reply Box (Sales Representative Only) */}
+            {userRole === 'REP' ? (
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', borderTop: '1px solid var(--border-subtle)', paddingTop: '12px' }}>
+                <input
+                  type="text"
+                  placeholder={`Reply to ${quote?.customer?.name || 'customer'}...`}
+                  value={replyText}
+                  onChange={(e) => setReplyText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault()
+                      handleSendReply()
+                    }
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: '7px 12px',
+                    borderRadius: '4px',
+                    border: '1px solid var(--border-subtle)',
+                    fontSize: '12.5px',
+                    outline: 'none',
+                  }}
+                />
+                <Button variant="primary" size="sm" onClick={handleSendReply} isLoading={isSendingReply} disabled={!replyText.trim()}>
+                  <Send size={12} />
+                  Send Reply
+                </Button>
+              </div>
+            ) : (
+              <div
                 style={{
-                  flex: 1,
-                  padding: '7px 12px',
-                  borderRadius: '4px',
-                  border: '1px solid var(--border-subtle)',
-                  fontSize: '12.5px',
-                  outline: 'none',
+                  borderTop: '1px solid var(--border-subtle)',
+                  paddingTop: '10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  fontSize: '11.5px',
+                  color: 'var(--text-secondary)',
                 }}
-              />
-              <Button variant="primary" size="sm" onClick={handleSendReply} isLoading={isSendingReply} disabled={!replyText.trim()}>
-                <Send size={12} />
-                Send Reply
-              </Button>
-            </div>
+              >
+                <span>
+                  Customer dialogue is managed exclusively by the assigned Sales Representative ({quote?.rep?.name || 'Sales Rep'}).
+                </span>
+                <span style={{ fontWeight: 600, color: 'var(--copper-700)' }}>
+                  {userRole === 'FINANCE' ? 'Finance' : 'Management'}: Governance Approval Only
+                </span>
+              </div>
+            )}
           </Card>
 
           {/* Action Bar (Submit for Approval or Review in Approvals) */}

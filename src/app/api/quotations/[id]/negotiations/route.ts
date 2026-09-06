@@ -37,7 +37,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
 // POST /api/quotations/[id]/negotiations — Add comment or counter-proposal
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { errorResponse, session } = await requireAuth(['REP', 'MANAGER', 'FINANCE', 'ADMIN', 'CUSTOMER'])
+  // Only REP and CUSTOMER can chat in negotiations.
+  // Managers and Finance interact via the formal approval decision workflow.
+  const { errorResponse, session } = await requireAuth(['REP', 'CUSTOMER'])
   if (errorResponse) return errorResponse
 
   try {
@@ -57,8 +59,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     if (role === 'CUSTOMER' && authorType !== NegotiationAuthorType.CUSTOMER) {
       return NextResponse.json({ error: 'Forbidden: Customers cannot post as sales team' }, { status: 403 })
     }
-    if ((role === 'REP' || role === 'MANAGER' || role === 'FINANCE' || role === 'ADMIN') && authorType === NegotiationAuthorType.CUSTOMER) {
-      return NextResponse.json({ error: 'Forbidden: Internal users cannot post as customer' }, { status: 403 })
+    if (role === 'REP' && authorType !== NegotiationAuthorType.REP) {
+      return NextResponse.json({ error: 'Forbidden: Sales Reps can only post as REP' }, { status: 403 })
     }
 
     const quotation = await prisma.quotation.findUnique({
