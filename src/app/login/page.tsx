@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
+import { Logo } from '@/components/brand/LogoConcepts'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -60,24 +61,9 @@ export default function LoginPage() {
       <div style={{ width: '100%', maxWidth: '400px' }}>
         {/* Brand */}
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <div
-            style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '8px',
-              backgroundColor: '#4F46E5',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#FFFFFF',
-              fontWeight: 700,
-              fontSize: '18px',
-              marginBottom: '8px',
-            }}
-          >
-            D
+          <div style={{ display: 'inline-flex', justifyContent: 'center', marginBottom: '10px' }}>
+            <Logo size={36} />
           </div>
-          <h1 style={{ fontSize: '20px', fontWeight: 600, color: '#18181B' }}>DealFlow360</h1>
           <p style={{ fontSize: '13px', color: '#71717A', marginTop: '4px' }}>
             B2B Sales Operations & Governance Platform
           </p>

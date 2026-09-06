@@ -17,6 +17,7 @@ import {
   Sliders,
   LogOut,
 } from 'lucide-react'
+import { Logo } from '@/components/brand/LogoConcepts'
 
 interface NavItem {
   label: string
@@ -29,11 +30,11 @@ const navItems: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['REP', 'MANAGER', 'FINANCE', 'ADMIN'] },
   { label: 'Quotations', href: '/quotations', icon: FileText, roles: ['REP', 'MANAGER'] },
   { label: 'Approvals', href: '/approvals', icon: CheckCircle, roles: ['MANAGER', 'FINANCE'] },
-  { label: 'Fulfillment', href: '/fulfillment', icon: Truck, roles: ['REP', 'MANAGER', 'FINANCE'] },
-  { label: 'Subscriptions', href: '/subscriptions', icon: Repeat, roles: ['REP', 'MANAGER', 'FINANCE'] },
-  { label: 'Invoices', href: '/invoices', icon: Receipt, roles: ['FINANCE', 'MANAGER'] },
+  { label: 'Fulfillment', href: '/fulfillment', icon: Truck, roles: ['FINANCE', 'ADMIN'] },
+  { label: 'Subscriptions', href: '/subscriptions', icon: Repeat, roles: ['FINANCE', 'ADMIN'] },
+  { label: 'Invoices', href: '/invoices', icon: Receipt, roles: ['FINANCE', 'ADMIN'] },
   { label: 'Deal Health', href: '/deal-health', icon: Activity, roles: ['MANAGER'] },
-  { label: 'Reports', href: '/admin/reports', icon: BarChart3, roles: ['ADMIN', 'MANAGER'] },
+  { label: 'Reports', href: '/admin/reports', icon: BarChart3, roles: ['ADMIN'] },
   { label: 'Products', href: '/admin/products', icon: Package, roles: ['ADMIN'] },
   { label: 'Discount Setup', href: '/admin/discount-config', icon: Sliders, roles: ['ADMIN', 'MANAGER'] },
 ]
@@ -103,28 +104,9 @@ export const InternalShell: React.FC<{ children: React.ReactNode; title?: string
             borderBottom: '1px solid #E4E4E7',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
           }}
         >
-          <div
-            style={{
-              width: '24px',
-              height: '24px',
-              borderRadius: '6px',
-              backgroundColor: '#4F46E5',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#FFFFFF',
-              fontWeight: 700,
-              fontSize: '12px',
-            }}
-          >
-            D
-          </div>
-          <span style={{ fontSize: '15px', fontWeight: 600, color: '#18181B', letterSpacing: '-0.02em' }}>
-            DealFlow360
-          </span>
+          <Logo size={24} />
         </div>
 
         {/* Navigation Items */}

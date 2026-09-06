@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth-guard'
 import { recalculateQuotationLineTotal } from '@/lib/services/quotation/totals'
+import { calculateQuotationRiskScore } from '@/lib/services/quotation/riskScore'
 import { UserRole } from '@prisma/client'
 import { NextResponse } from 'next/server'
 
@@ -75,6 +76,17 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         subscriptionPlan: true,
       },
     })
+
+    // Recalculate & cache blended risk score immediately on line addition
+    try {
+      const riskAnalysis = await calculateQuotationRiskScore(quotationId)
+      await prisma.quotation.update({
+        where: { id: quotationId },
+        data: { blendedRiskScore: riskAnalysis.blendedRiskScore },
+      })
+    } catch (riskErr) {
+      console.error('Failed to recalculate risk score on line addition:', riskErr)
+    }
 
     return NextResponse.json(line, { status: 201 })
   } catch (error: any) {

@@ -67,7 +67,7 @@ export default function FulfillmentDetailPage({ params }: { params: Promise<{ id
 
   return (
     <InternalShell title={`Fulfillment Detail — Order #${formatDisplayId(orderId)}`}>
-      <RoleGuard allowedRoles={['REP', 'MANAGER', 'FINANCE']}>
+      <RoleGuard allowedRoles={['FINANCE', 'ADMIN']}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {/* Order Header Summary */}
           <Card>

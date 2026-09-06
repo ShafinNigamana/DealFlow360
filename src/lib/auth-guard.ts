@@ -34,19 +34,48 @@ export async function requireAuth(allowedRoles?: AppRole[]) {
             },
             expires: new Date(Date.now() + 86400000).toISOString(),
           } as any
+        } else {
+          // Fallback: Check customer table
+          const dbCustomer = await prisma.customer.findUnique({ where: { email: userEmail } })
+          if (dbCustomer) {
+            session = {
+              user: {
+                id: dbCustomer.id,
+                name: dbCustomer.name,
+                email: dbCustomer.email,
+                role: 'CUSTOMER' as any,
+              },
+              expires: new Date(Date.now() + 86400000).toISOString(),
+            } as any
+          }
         }
       } else if (userRole) {
-        const dbUser = await prisma.user.findFirst({ where: { role: userRole } })
-        if (dbUser) {
-          session = {
-            user: {
-              id: dbUser.id,
-              name: dbUser.name,
-              email: dbUser.email,
-              role: dbUser.role,
-            },
-            expires: new Date(Date.now() + 86400000).toISOString(),
-          } as any
+        if (userRole === ('CUSTOMER' as any)) {
+          const dbCustomer = await prisma.customer.findFirst()
+          if (dbCustomer) {
+            session = {
+              user: {
+                id: dbCustomer.id,
+                name: dbCustomer.name,
+                email: dbCustomer.email,
+                role: 'CUSTOMER' as any,
+              },
+              expires: new Date(Date.now() + 86400000).toISOString(),
+            } as any
+          }
+        } else {
+          const dbUser = await prisma.user.findFirst({ where: { role: userRole as UserRole } })
+          if (dbUser) {
+            session = {
+              user: {
+                id: dbUser.id,
+                name: dbUser.name,
+                email: dbUser.email,
+                role: dbUser.role,
+              },
+              expires: new Date(Date.now() + 86400000).toISOString(),
+            } as any
+          }
         }
       }
     } catch {

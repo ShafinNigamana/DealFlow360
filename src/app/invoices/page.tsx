@@ -100,7 +100,7 @@ export default function InvoicesPage() {
 
   return (
     <InternalShell title="Invoices & Billing Reconciliation">
-      <RoleGuard allowedRoles={['FINANCE', 'MANAGER']}>
+      <RoleGuard allowedRoles={['FINANCE', 'ADMIN']}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {/* Top Controls Bar */}
           {userRole === 'FINANCE' && (

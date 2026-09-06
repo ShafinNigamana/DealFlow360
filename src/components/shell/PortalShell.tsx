@@ -3,6 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { signOut } from 'next-auth/react'
+import { Logo } from '@/components/brand/LogoConcepts'
 
 export const PortalShell: React.FC<{ children: React.ReactNode; customerName?: string }> = ({
   children,
@@ -24,23 +25,21 @@ export const PortalShell: React.FC<{ children: React.ReactNode; customerName?: s
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div
+            <Logo size={24} />
+            <span
               style={{
-                width: '24px',
-                height: '24px',
-                borderRadius: '6px',
-                backgroundColor: '#4F46E5',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#FFFFFF',
-                fontWeight: 700,
                 fontSize: '12px',
+                fontWeight: 600,
+                color: '#6366F1',
+                backgroundColor: '#EEF2FF',
+                padding: '2px 8px',
+                borderRadius: '4px',
+                letterSpacing: '0.02em',
+                marginLeft: '6px',
               }}
             >
-              D
-            </div>
-            <span style={{ fontSize: '15px', fontWeight: 600, color: '#18181B' }}>DealFlow360 Customer Portal</span>
+              PORTAL
+            </span>
           </div>
 
           <nav style={{ display: 'flex', gap: '16px' }}>

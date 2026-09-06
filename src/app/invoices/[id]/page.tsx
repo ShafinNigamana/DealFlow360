@@ -91,7 +91,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
 
   return (
     <InternalShell title={`Invoice Detail — #${formatDisplayId(invoiceId)}`}>
-      <RoleGuard allowedRoles={['FINANCE', 'MANAGER']}>
+      <RoleGuard allowedRoles={['FINANCE', 'ADMIN']}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         {/* Invoice Summary Header */}
         <Card>

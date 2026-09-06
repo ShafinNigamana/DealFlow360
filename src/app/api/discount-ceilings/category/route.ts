@@ -5,6 +5,9 @@ import { NextResponse } from 'next/server'
 
 // GET /api/discount-ceilings/category — List all category discount ceilings
 export async function GET() {
+  const { errorResponse } = await requireAuth([UserRole.ADMIN, UserRole.MANAGER, UserRole.FINANCE])
+  if (errorResponse) return errorResponse
+
   try {
     const ceilings = await prisma.categoryDiscountCeiling.findMany({
       include: { category: true },

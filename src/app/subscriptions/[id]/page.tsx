@@ -66,7 +66,7 @@ export default function BillingDetailPage({ params }: { params: Promise<{ id: st
 
   return (
     <InternalShell title={`Billing Detail — Subscription #${formatDisplayId(subscriptionId)}`}>
-      <RoleGuard allowedRoles={['REP', 'MANAGER', 'FINANCE']}>
+      <RoleGuard allowedRoles={['FINANCE', 'ADMIN']}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {/* Status & Plan Overview */}
           <Card>

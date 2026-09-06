@@ -272,6 +272,7 @@ export interface UpsellRuleDTO {
 }
 
 export interface UpsellSuggestionDTO {
+  id?: string
   ruleId: string
   suggestedProduct: ProductDTO
   marginDelta: number

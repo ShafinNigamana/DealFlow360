@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth-guard'
 import { recalculateQuotationLineTotal } from '@/lib/services/quotation/totals'
+import { calculateQuotationRiskScore } from '@/lib/services/quotation/riskScore'
 import { UserRole } from '@prisma/client'
 import { NextResponse } from 'next/server'
 
@@ -56,6 +57,17 @@ export async function PATCH(
       },
     })
 
+    // Recalculate & cache blended risk score immediately on line update
+    try {
+      const riskAnalysis = await calculateQuotationRiskScore(quotationId)
+      await prisma.quotation.update({
+        where: { id: quotationId },
+        data: { blendedRiskScore: riskAnalysis.blendedRiskScore },
+      })
+    } catch (riskErr) {
+      console.error('Failed to recalculate risk score on line update:', riskErr)
+    }
+
     return NextResponse.json(updatedLine)
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Failed to update quotation line' }, { status: 500 })
@@ -90,6 +102,17 @@ export async function DELETE(
     }
 
     await prisma.quotationLine.delete({ where: { id: lineId } })
+
+    // Recalculate & cache blended risk score immediately on line deletion
+    try {
+      const riskAnalysis = await calculateQuotationRiskScore(quotationId)
+      await prisma.quotation.update({
+        where: { id: quotationId },
+        data: { blendedRiskScore: riskAnalysis.blendedRiskScore },
+      })
+    } catch (riskErr) {
+      console.error('Failed to recalculate risk score on line deletion:', riskErr)
+    }
 
     return NextResponse.json({ message: 'Line item deleted' })
   } catch (error: any) {

@@ -33,7 +33,7 @@ export default function SubscriptionsPage() {
 
   return (
     <InternalShell title="Subscriptions Governance">
-      <RoleGuard allowedRoles={['REP', 'MANAGER', 'FINANCE']}>
+      <RoleGuard allowedRoles={['FINANCE', 'ADMIN']}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         {/* Metric Header */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>

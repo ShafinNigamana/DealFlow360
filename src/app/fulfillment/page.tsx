@@ -35,7 +35,7 @@ export default function FulfillmentPage() {
 
   return (
     <InternalShell title="Fulfillment & Multi-Warehouse Stock">
-      <RoleGuard allowedRoles={['REP', 'MANAGER', 'FINANCE']}>
+      <RoleGuard allowedRoles={['FINANCE', 'ADMIN']}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         {/* Live Warehouse Stocks Table */}
         <Card style={{ padding: 0 }}>

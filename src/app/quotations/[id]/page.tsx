@@ -20,12 +20,14 @@ export default function QuotationDetailPage({ params }: { params: Promise<{ id: 
   const [quote, setQuote] = useState<QuotationDTO | null>(null)
   const [products, setProducts] = useState<ProductDTO[]>([])
   const [upsells, setUpsells] = useState<UpsellSuggestionDTO[]>([])
+  const [subscriptionPlans, setSubscriptionPlans] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Add line form state
   const [selectedProductId, setSelectedProductId] = useState('')
+  const [selectedPlanId, setSelectedPlanId] = useState('')
   const [quantity, setQuantity] = useState(1)
   const [discountPercent, setDiscountPercent] = useState(0)
 
@@ -33,10 +35,11 @@ export default function QuotationDetailPage({ params }: { params: Promise<{ id: 
     setIsLoading(true)
     setError('')
     try {
-      const [qRes, pRes, uRes] = await Promise.all([
+      const [qRes, pRes, uRes, spRes] = await Promise.all([
         fetch(`/api/quotations/${quotationId}`),
         fetch('/api/products'),
         fetch(`/api/quotations/${quotationId}/upsell-suggestions`),
+        fetch('/api/subscription-plans'),
       ])
 
       if (!qRes.ok) throw new Error('Quotation not found')
@@ -52,6 +55,11 @@ export default function QuotationDetailPage({ params }: { params: Promise<{ id: 
       if (uRes.ok) {
         const uJson = await uRes.json()
         setUpsells(uJson)
+      }
+
+      if (spRes.ok) {
+        const spJson = await spRes.json()
+        setSubscriptionPlans(spJson)
       }
     } catch (err: any) {
       setError(err.message || 'Failed to load quote detail')
@@ -76,6 +84,7 @@ export default function QuotationDetailPage({ params }: { params: Promise<{ id: 
           productId: targetProductId,
           quantity: prodId ? 1 : Number(quantity),
           unitDiscountPercent: prodId ? 0 : Number(discountPercent),
+          subscriptionPlanId: prodId ? undefined : (selectedPlanId || undefined),
         }),
       })
 
@@ -186,7 +195,7 @@ export default function QuotationDetailPage({ params }: { params: Promise<{ id: 
         {quote?.status === 'DRAFT' && (
           <Card>
             <CardHeader title="Add Product Line Item" />
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr auto', gap: '12px', alignItems: 'flex-end' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.5fr 1fr 1fr auto', gap: '12px', alignItems: 'flex-end' }}>
               <Select
                 label="Product"
                 value={selectedProductId}
@@ -195,6 +204,18 @@ export default function QuotationDetailPage({ params }: { params: Promise<{ id: 
                   label: `${p.name} — $${Number(p.basePrice).toFixed(2)} (${p.category?.name})`,
                   value: p.id,
                 }))}
+              />
+              <Select
+                label="Billing Model"
+                value={selectedPlanId}
+                onChange={(e) => setSelectedPlanId(e.target.value)}
+                options={[
+                  { label: 'One-Time Purchase', value: '' },
+                  ...subscriptionPlans.map((sp) => ({
+                    label: `Recurring (${sp.name} - ${sp.cadence})`,
+                    value: sp.id,
+                  })),
+                ]}
               />
               <Input
                 label="Quantity"
@@ -246,7 +267,27 @@ export default function QuotationDetailPage({ params }: { params: Promise<{ id: 
               <TableBody>
                 {quote.lines.map((line) => (
                   <TableRow key={line.id}>
-                    <TableCell style={{ fontWeight: 600 }}>{line.product?.name}</TableCell>
+                    <TableCell style={{ fontWeight: 600 }}>
+                      <div>{line.product?.name}</div>
+                      {line.subscriptionPlan ? (
+                        <span
+                          style={{
+                            display: 'inline-block',
+                            marginTop: '4px',
+                            fontSize: '11px',
+                            color: '#4F46E5',
+                            backgroundColor: '#EEF2FF',
+                            padding: '1px 6px',
+                            borderRadius: '4px',
+                            fontWeight: 600,
+                          }}
+                        >
+                          Recurring • {line.subscriptionPlan.cadence}
+                        </span>
+                      ) : (
+                        <span style={{ fontSize: '11px', color: '#71717A' }}>One-time</span>
+                      )}
+                    </TableCell>
                     <TableCell style={{ color: '#71717A' }}>{line.product?.category?.name || 'General'}</TableCell>
                     <TableCell>${Number(line.product?.basePrice).toFixed(2)}</TableCell>
                     <TableCell>{line.quantity}</TableCell>
@@ -288,9 +329,9 @@ export default function QuotationDetailPage({ params }: { params: Promise<{ id: 
               subtitle="Ranked suggestions based on co-purchase pairings and promotions"
             />
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
-              {upsells.map((sug) => (
+              {upsells.map((sug, idx) => (
                 <div
-                  key={sug.ruleId}
+                  key={sug.ruleId || sug.id || `upsell-${idx}`}
                   style={{
                     border: '1px solid #E4E4E7',
                     borderRadius: '6px',
@@ -310,7 +351,7 @@ export default function QuotationDetailPage({ params }: { params: Promise<{ id: 
                       {sug.isPromoted && <Badge variant="accent"><Sparkles size={10} /> Promoted</Badge>}
                     </div>
                     <p style={{ fontSize: '11px', color: '#71717A', marginTop: '4px' }}>
-                      {sug.reason} • Base Price: ${Number(sug.suggestedProduct.basePrice).toFixed(2)}
+                      {(sug as any).reason || (sug.isPromoted ? 'Promoted pairing' : 'Recommended co-purchase')} • Base Price: ${Number(sug.suggestedProduct.basePrice).toFixed(2)}
                     </p>
                   </div>
                   <Button

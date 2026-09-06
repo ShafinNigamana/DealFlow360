@@ -40,7 +40,18 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       orderBy: [{ isPromoted: 'desc' }, { minMarginThreshold: 'desc' }],
     })
 
-    return NextResponse.json(suggestions)
+    const formatted = suggestions.map((r) => ({
+      id: r.id,
+      ruleId: r.id,
+      suggestedProduct: r.suggestedProduct,
+      marginDelta: Number(r.minMarginThreshold || 0),
+      reason: r.isPromoted
+        ? 'Featured partner promotion'
+        : `Frequently co-purchased with ${r.sourceProduct?.name || 'order items'}`,
+      isPromoted: r.isPromoted,
+    }))
+
+    return NextResponse.json(formatted)
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Failed to fetch upsell suggestions' }, { status: 500 })
   }
