@@ -474,8 +474,8 @@ export default function QuotationDetailPage({ params }: { params: Promise<{ id: 
             </div>
           </Card>
 
-          {/* Upsell / Cross-sell Suggestions Panel */}
-          {upsells.length > 0 && (
+          {/* Upsell / Cross-sell Suggestions Panel (Only active while drafting quotation) */}
+          {canEdit && upsells.length > 0 && (
             <Card>
               <CardHeader
                 title="Upsell & Cross-Sell Suggestions"
