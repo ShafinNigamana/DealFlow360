@@ -2,7 +2,9 @@
 
 import React, { useEffect, useState, use } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { InternalShell } from '@/components/shell/InternalShell'
+import { RoleGuard } from '@/components/auth/RoleGuard'
 import { Card, CardHeader } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -14,6 +16,8 @@ import { formatDisplayId } from '@/lib/formatters'
 export default function FulfillmentDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: orderId } = use(params)
   const router = useRouter()
+  const { data: session } = useSession()
+  const userRole = session?.user?.role || ''
 
   const [order, setOrder] = useState<QuotationDTO | null>(null)
   const [splitResult, setSplitResult] = useState<any>(null)
@@ -63,35 +67,40 @@ export default function FulfillmentDetailPage({ params }: { params: Promise<{ id
 
   return (
     <InternalShell title={`Fulfillment Detail — Order #${formatDisplayId(orderId)}`}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        {/* Order Header Summary */}
-        <Card>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#18181B' }}>
-                  {order?.customer?.name || 'Customer'}
-                </h2>
-                <Badge variant={order?.status === 'FULFILLED' ? 'success' : 'warning'}>
-                  {order?.status}
-                </Badge>
+      <RoleGuard allowedRoles={['REP', 'MANAGER', 'FINANCE']}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {/* Order Header Summary */}
+          <Card>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#18181B' }}>
+                    {order?.customer?.name || 'Customer'}
+                  </h2>
+                  <Badge variant={order?.status === 'FULFILLED' ? 'success' : 'warning'}>
+                    {order?.status}
+                  </Badge>
+                </div>
+                <p style={{ fontSize: '12px', color: '#71717A', marginTop: '4px' }}>
+                  Order Value: ${order?.lines?.reduce((s, l) => s + Number(l.lineTotal), 0).toFixed(2)}
+                </p>
               </div>
-              <p style={{ fontSize: '12px', color: '#71717A', marginTop: '4px' }}>
-                Order Value: ${order?.lines?.reduce((s, l) => s + Number(l.lineTotal), 0).toFixed(2)}
-              </p>
-            </div>
 
-            {order?.status === 'FULFILLED' ? (
-              <Button variant="secondary" disabled style={{ opacity: 0.8, cursor: 'default', backgroundColor: '#F4F4F5' }}>
-                <Check size={14} color="#16A34A" /> Fulfillment Completed
-              </Button>
-            ) : (
-              <Button variant="primary" onClick={handleCalculateSplit} isLoading={isExecuting}>
-                <Truck size={14} /> Calculate & Execute Warehouse Split
-              </Button>
-            )}
-          </div>
-        </Card>
+              {order?.status === 'FULFILLED' ? (
+                <Button variant="secondary" disabled style={{ opacity: 0.8, cursor: 'default', backgroundColor: '#F4F4F5' }}>
+                  <Check size={14} color="#16A34A" /> Fulfillment Completed
+                </Button>
+              ) : userRole === 'FINANCE' ? (
+                <Button variant="primary" onClick={handleCalculateSplit} isLoading={isExecuting}>
+                  <Truck size={14} /> Calculate & Execute Warehouse Split
+                </Button>
+              ) : (
+                <span style={{ fontSize: '12px', color: '#71717A', fontStyle: 'italic' }}>
+                  Split execution restricted to Finance
+                </span>
+              )}
+            </div>
+          </Card>
 
         {/* Existing Warehouse Splits Table */}
         <Card style={{ padding: 0 }}>
@@ -158,6 +167,7 @@ export default function FulfillmentDetailPage({ params }: { params: Promise<{ id
           </span>
         </div>
       </div>
+      </RoleGuard>
     </InternalShell>
   )
 }

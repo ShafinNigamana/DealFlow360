@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { InternalShell } from '@/components/shell/InternalShell'
+import { RoleGuard } from '@/components/auth/RoleGuard'
 import { Card, CardHeader } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from '@/components/ui/Table'
@@ -34,7 +35,8 @@ export default function FulfillmentPage() {
 
   return (
     <InternalShell title="Fulfillment & Multi-Warehouse Stock">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <RoleGuard allowedRoles={['REP', 'MANAGER', 'FINANCE']}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         {/* Live Warehouse Stocks Table */}
         <Card style={{ padding: 0 }}>
           <CardHeader title="Warehouse Inventory & Shipping Weight" subtitle="Real-time multi-warehouse stock levels" />
@@ -99,6 +101,7 @@ export default function FulfillmentPage() {
           )}
         </Card>
       </div>
+      </RoleGuard>
     </InternalShell>
   )
 }

@@ -1,9 +1,16 @@
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth-guard'
+import { UserRole } from '@prisma/client'
 import { NextResponse } from 'next/server'
 
+const INTERNAL_ROLES = [UserRole.REP, UserRole.MANAGER, UserRole.FINANCE, UserRole.ADMIN]
+
 // GET /api/quotations/[id] — Fetch single quotation with full details
+// Hybrid: internal roles see any quotation; CUSTOMER role sees only their own
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { errorResponse, session } = await requireAuth()
+  if (errorResponse) return errorResponse
+
   try {
     const { id } = await params
 
@@ -38,6 +45,12 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       return NextResponse.json({ error: 'Quotation not found' }, { status: 404 })
     }
 
+    // CUSTOMER can only view their own quotation
+    const role = session!.user.role
+    if (role === 'CUSTOMER' && quotation.customerId !== session!.user.id) {
+      return NextResponse.json({ error: 'Forbidden: You can only view your own quotations' }, { status: 403 })
+    }
+
     return NextResponse.json(quotation)
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Failed to fetch quotation' }, { status: 500 })
@@ -46,7 +59,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
 // PATCH /api/quotations/[id] — Update quotation (customer, status transitions)
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { errorResponse } = await requireAuth()
+  const { errorResponse } = await requireAuth([UserRole.REP, UserRole.MANAGER, UserRole.FINANCE])
   if (errorResponse) return errorResponse
 
   try {
@@ -107,7 +120,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
 // DELETE /api/quotations/[id] — Delete DRAFT quotation
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { errorResponse } = await requireAuth()
+  const { errorResponse } = await requireAuth([UserRole.REP, UserRole.MANAGER])
   if (errorResponse) return errorResponse
 
   try {
@@ -129,3 +142,4 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     return NextResponse.json({ error: error.message || 'Failed to delete quotation' }, { status: 500 })
   }
 }
+

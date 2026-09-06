@@ -22,19 +22,20 @@ interface NavItem {
   label: string
   href: string
   icon: React.ComponentType<{ size?: number; color?: string }>
+  roles: string[]
 }
 
 const navItems: NavItem[] = [
-  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { label: 'Quotations', href: '/quotations', icon: FileText },
-  { label: 'Approvals', href: '/approvals', icon: CheckCircle },
-  { label: 'Fulfillment', href: '/fulfillment', icon: Truck },
-  { label: 'Subscriptions', href: '/subscriptions', icon: Repeat },
-  { label: 'Invoices', href: '/invoices', icon: Receipt },
-  { label: 'Deal Health', href: '/deal-health', icon: Activity },
-  { label: 'Reports', href: '/admin/reports', icon: BarChart3 },
-  { label: 'Products', href: '/admin/products', icon: Package },
-  { label: 'Discount Setup', href: '/admin/discount-config', icon: Sliders },
+  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['REP', 'MANAGER', 'FINANCE', 'ADMIN'] },
+  { label: 'Quotations', href: '/quotations', icon: FileText, roles: ['REP', 'MANAGER'] },
+  { label: 'Approvals', href: '/approvals', icon: CheckCircle, roles: ['MANAGER', 'FINANCE'] },
+  { label: 'Fulfillment', href: '/fulfillment', icon: Truck, roles: ['REP', 'MANAGER', 'FINANCE'] },
+  { label: 'Subscriptions', href: '/subscriptions', icon: Repeat, roles: ['REP', 'MANAGER', 'FINANCE'] },
+  { label: 'Invoices', href: '/invoices', icon: Receipt, roles: ['FINANCE', 'MANAGER'] },
+  { label: 'Deal Health', href: '/deal-health', icon: Activity, roles: ['MANAGER'] },
+  { label: 'Reports', href: '/admin/reports', icon: BarChart3, roles: ['ADMIN', 'MANAGER'] },
+  { label: 'Products', href: '/admin/products', icon: Package, roles: ['ADMIN'] },
+  { label: 'Discount Setup', href: '/admin/discount-config', icon: Sliders, roles: ['ADMIN', 'MANAGER'] },
 ]
 
 export const InternalShell: React.FC<{ children: React.ReactNode; title?: string }> = ({
@@ -44,8 +45,39 @@ export const InternalShell: React.FC<{ children: React.ReactNode; title?: string
   const pathname = usePathname()
   const { data: session } = useSession()
 
+  const userRole = (session?.user?.role as string) || ''
+  const visibleNavItems = navItems.filter((item) => item.roles.includes(userRole))
+
   const activeTitle =
     title || navItems.find((n) => pathname === n.href || pathname.startsWith(n.href + '/'))?.label || 'Dashboard'
+
+  if (session && userRole === 'CUSTOMER') {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F8FAFC', padding: '24px' }}>
+        <div style={{ maxWidth: '440px', textAlign: 'center', backgroundColor: '#FFFFFF', padding: '32px', borderRadius: '12px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: 600, color: '#0F172A', marginBottom: '8px' }}>Internal Workspace Restricted</h2>
+          <p style={{ fontSize: '14px', color: '#64748B', lineHeight: '1.5', marginBottom: '20px' }}>
+            Customer portal accounts cannot access the internal employee workspace. Please use your quotation link to view negotiations.
+          </p>
+          <button
+            onClick={() => signOut({ callbackUrl: '/login' })}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#4F46E5',
+              color: '#FFFFFF',
+              borderRadius: '6px',
+              border: 'none',
+              fontSize: '13px',
+              fontWeight: 500,
+              cursor: 'pointer',
+            }}
+          >
+            Sign Out
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#FAFAFA' }}>
@@ -97,7 +129,7 @@ export const InternalShell: React.FC<{ children: React.ReactNode; title?: string
 
         {/* Navigation Items */}
         <nav style={{ flex: 1, padding: '12px 10px', overflowY: 'auto' }}>
-          {navItems.map((item) => {
+          {visibleNavItems.map((item) => {
             const Icon = item.icon
             const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
 

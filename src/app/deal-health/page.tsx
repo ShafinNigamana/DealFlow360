@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { InternalShell } from '@/components/shell/InternalShell'
+import { RoleGuard } from '@/components/auth/RoleGuard'
 import { Card, CardHeader } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -53,7 +54,8 @@ export default function DealHealthPage() {
 
   return (
     <InternalShell title="Deal Health & Anomaly Monitoring">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <RoleGuard allowedRoles={['MANAGER']}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         {/* Three Alert Summary Tiles */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
           <Card>
@@ -160,6 +162,7 @@ export default function DealHealthPage() {
           )}
         </Card>
       </div>
+      </RoleGuard>
     </InternalShell>
   )
 }

@@ -1,11 +1,11 @@
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth-guard'
-import { SubscriptionStatus } from '@prisma/client'
+import { SubscriptionStatus, UserRole } from '@prisma/client'
 import { NextResponse } from 'next/server'
 
 // GET /api/subscriptions/[id] — Fetch single subscription details
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { errorResponse } = await requireAuth()
+  const { errorResponse } = await requireAuth([UserRole.REP, UserRole.MANAGER, UserRole.FINANCE])
   if (errorResponse) return errorResponse
 
   try {
@@ -38,7 +38,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
 // PATCH /api/subscriptions/[id] — Update subscription status (pause/cancel)
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { errorResponse } = await requireAuth()
+  const { errorResponse } = await requireAuth([UserRole.FINANCE])
   if (errorResponse) return errorResponse
 
   try {

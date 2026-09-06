@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { InternalShell } from '@/components/shell/InternalShell'
+import { RoleGuard } from '@/components/auth/RoleGuard'
 import { Card, CardHeader } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -39,7 +40,8 @@ export default function DiscountConfigPage() {
 
   return (
     <InternalShell title="Discount Tiers & Approval Governance Setup">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <RoleGuard allowedRoles={['ADMIN', 'MANAGER']}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         {/* Banner Notice */}
         <Card style={{ backgroundColor: '#F0FDF4', borderColor: '#DCFCE7' }}>
           <div style={{ fontSize: '13px', color: '#15803D' }}>
@@ -151,6 +153,7 @@ export default function DiscountConfigPage() {
           </Button>
         </div>
       </div>
+      </RoleGuard>
     </InternalShell>
   )
 }

@@ -1,14 +1,17 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { UserRole } from '@prisma/client'
+import { AppRole } from '@/types/next-auth'
 import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
+
+export type { AppRole }
 
 export async function getAuthSession() {
   return await auth()
 }
 
-export async function requireAuth(allowedRoles?: UserRole[]) {
+export async function requireAuth(allowedRoles?: AppRole[]) {
   // 1. Try NextAuth standard session cookie
   let session = await auth()
 

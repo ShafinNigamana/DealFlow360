@@ -2,13 +2,27 @@ import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth-guard'
 import { logAudit } from '@/lib/services/audit/auditLog'
 import { routeQuotationForApproval } from '@/lib/services/approval/routingEngine'
-import { NegotiationAuthorType, QuotationStatus } from '@prisma/client'
+import { NegotiationAuthorType, QuotationStatus, UserRole } from '@prisma/client'
 import { NextResponse } from 'next/server'
 
 // GET /api/quotations/[id]/negotiations — List negotiation thread
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { errorResponse, session } = await requireAuth()
+  if (errorResponse) return errorResponse
+
   try {
     const { id } = await params
+
+    const role = session!.user.role
+    if (role === 'CUSTOMER') {
+      const quotation = await prisma.quotation.findUnique({
+        where: { id },
+        select: { customerId: true },
+      })
+      if (!quotation || quotation.customerId !== session!.user.id) {
+        return NextResponse.json({ error: 'Forbidden: You can only view negotiations for your own quotations' }, { status: 403 })
+      }
+    }
 
     const comments = await prisma.negotiationComment.findMany({
       where: { quotationId: id },
@@ -23,6 +37,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
 // POST /api/quotations/[id]/negotiations — Add comment or counter-proposal
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { errorResponse, session } = await requireAuth([UserRole.REP, UserRole.MANAGER, 'CUSTOMER'])
+  if (errorResponse) return errorResponse
+
   try {
     const { id: quotationId } = await params
     const body = await req.json()
@@ -36,6 +53,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       return NextResponse.json({ error: 'Invalid authorType enum' }, { status: 400 })
     }
 
+    const role = session!.user.role
+    if (role === 'CUSTOMER' && authorType !== NegotiationAuthorType.CUSTOMER) {
+      return NextResponse.json({ error: 'Forbidden: Customers cannot post as sales team' }, { status: 403 })
+    }
+    if ((role === 'REP' || role === 'MANAGER') && authorType === NegotiationAuthorType.CUSTOMER) {
+      return NextResponse.json({ error: 'Forbidden: Internal users cannot post as customer' }, { status: 403 })
+    }
+
     const quotation = await prisma.quotation.findUnique({
       where: { id: quotationId },
       include: {
@@ -47,6 +72,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     if (!quotation) {
       return NextResponse.json({ error: 'Quotation not found' }, { status: 404 })
+    }
+
+    if (role === 'CUSTOMER' && quotation.customerId !== session!.user.id) {
+      return NextResponse.json({ error: 'Forbidden: You can only negotiate your own quotations' }, { status: 403 })
     }
 
     const counterDisc = counterDiscountPercent !== undefined ? Number(counterDiscountPercent) : null

@@ -2,7 +2,7 @@
 // Domain Enums (explicit union definitions)
 // ──────────────────────────────────────────────
 
-export type UserRole = 'REP' | 'MANAGER' | 'FINANCE' | 'ADMIN'
+export type UserRole = 'REP' | 'MANAGER' | 'FINANCE' | 'ADMIN' | 'CUSTOMER'
 
 export type QuotationStatus =
   | 'DRAFT'
@@ -135,6 +135,7 @@ export interface QuotationLineDTO {
   product?: ProductDTO
   variant?: ProductVariantDTO | null
   subscriptionPlan?: SubscriptionPlanDTO | null
+  quotation?: QuotationDTO
 }
 
 export interface ApprovalDTO {

@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { InternalShell } from '@/components/shell/InternalShell'
+import { RoleGuard } from '@/components/auth/RoleGuard'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from '@/components/ui/Table'
@@ -44,7 +45,8 @@ export default function ApprovalsListPage() {
 
   return (
     <InternalShell title="Approvals Governance">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <RoleGuard allowedRoles={['MANAGER', 'FINANCE']}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {/* Status Count Summary Header */}
         <div style={{ display: 'flex', gap: '16px' }}>
           <Card style={{ flex: 1, padding: '12px 16px' }}>
@@ -153,6 +155,7 @@ export default function ApprovalsListPage() {
           )}
         </Card>
       </div>
+      </RoleGuard>
     </InternalShell>
   )
 }

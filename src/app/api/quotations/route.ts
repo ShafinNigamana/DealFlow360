@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server'
 
 // GET /api/quotations — List quotations (filtered by role / query params)
 export async function GET(req: Request) {
-  const { errorResponse, session } = await requireAuth()
+  const { errorResponse, session } = await requireAuth([UserRole.REP, UserRole.MANAGER, UserRole.FINANCE, UserRole.ADMIN])
   if (errorResponse) return errorResponse
 
   try {
@@ -57,7 +57,7 @@ export async function GET(req: Request) {
 
 // POST /api/quotations — Create a new Quotation in DRAFT status
 export async function POST(req: Request) {
-  const { errorResponse, session } = await requireAuth([UserRole.REP, UserRole.MANAGER, UserRole.ADMIN])
+  const { errorResponse, session } = await requireAuth([UserRole.REP, UserRole.MANAGER])
   if (errorResponse) return errorResponse
 
   try {

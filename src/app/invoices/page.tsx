@@ -2,7 +2,9 @@
 
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { InternalShell } from '@/components/shell/InternalShell'
+import { RoleGuard } from '@/components/auth/RoleGuard'
 import { Card, CardHeader } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -15,6 +17,9 @@ import { formatDisplayId } from '@/lib/formatters'
 
 export default function InvoicesPage() {
   const router = useRouter()
+  const { data: session } = useSession()
+  const userRole = session?.user?.role || ''
+
   const [invoices, setInvoices] = useState<InvoiceDTO[]>([])
   const [quotations, setQuotations] = useState<QuotationDTO[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -95,14 +100,17 @@ export default function InvoicesPage() {
 
   return (
     <InternalShell title="Invoices & Billing Reconciliation">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        {/* Top Controls Bar */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Button variant="primary" onClick={() => setIsModalOpen(true)}>
-            <Plus size={14} />
-            Generate Invoice
-          </Button>
-        </div>
+      <RoleGuard allowedRoles={['FINANCE', 'MANAGER']}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {/* Top Controls Bar */}
+          {userRole === 'FINANCE' && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Button variant="primary" onClick={() => setIsModalOpen(true)}>
+                <Plus size={14} />
+                Generate Invoice
+              </Button>
+            </div>
+          )}
 
         {/* Metric Header */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
@@ -198,6 +206,7 @@ export default function InvoicesPage() {
           </div>
         </Modal>
       </div>
+      </RoleGuard>
     </InternalShell>
   )
 }

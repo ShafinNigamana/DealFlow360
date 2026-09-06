@@ -2,7 +2,9 @@
 
 import React, { useEffect, useState, use } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { InternalShell } from '@/components/shell/InternalShell'
+import { RoleGuard } from '@/components/auth/RoleGuard'
 import { Card, CardHeader } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -16,6 +18,8 @@ import { formatDisplayId } from '@/lib/formatters'
 export default function BillingDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: subscriptionId } = use(params)
   const router = useRouter()
+  const { data: session } = useSession()
+  const userRole = session?.user?.role || ''
 
   const [sub, setSub] = useState<SubscriptionDTO | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -62,31 +66,38 @@ export default function BillingDetailPage({ params }: { params: Promise<{ id: st
 
   return (
     <InternalShell title={`Billing Detail — Subscription #${formatDisplayId(subscriptionId)}`}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        {/* Header Summary */}
-        <Card>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#18181B' }}>
-                  {sub?.plan?.name || 'Subscription Plan'}
-                </h2>
-                <Badge variant={sub?.status === 'ACTIVE' ? 'success' : 'danger'}>
-                  {sub?.status}
-                </Badge>
+      <RoleGuard allowedRoles={['REP', 'MANAGER', 'FINANCE']}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {/* Status & Plan Overview */}
+          <Card>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#18181B' }}>
+                    {sub?.plan?.name || 'Subscription Plan'}
+                  </h2>
+                  <Badge variant={sub?.status === 'ACTIVE' ? 'success' : sub?.status === 'PAUSED' ? 'warning' : 'danger'}>
+                    {sub?.status}
+                  </Badge>
+                </div>
+                <p style={{ fontSize: '12px', color: '#71717A', marginTop: '4px' }}>
+                  Customer: <strong style={{ color: '#18181B' }}>{sub?.quotationLine?.quotation?.customer?.name}</strong> • Billing Cadence: {sub?.plan?.cadence}
+                </p>
               </div>
-              <p style={{ fontSize: '12px', color: '#71717A', marginTop: '4px' }}>
-                Cadence: <strong style={{ color: '#18181B' }}>{sub?.plan?.cadence}</strong> • Proration Rule: {sub?.plan?.prorationRule}
-              </p>
-            </div>
 
-            {sub?.status === 'ACTIVE' && (
-              <Button variant="danger" onClick={() => setIsCancelModalOpen(true)}>
-                <AlertTriangle size={14} /> Cancel Subscription
-              </Button>
-            )}
-          </div>
-        </Card>
+              {sub?.status === 'ACTIVE' && (
+                userRole === 'FINANCE' ? (
+                  <Button variant="danger" onClick={() => setIsCancelModalOpen(true)}>
+                    <AlertTriangle size={14} /> Cancel Subscription
+                  </Button>
+                ) : (
+                  <span style={{ fontSize: '12px', color: '#71717A', fontStyle: 'italic' }}>
+                    Cancellation restricted to Finance
+                  </span>
+                )
+              )}
+            </div>
+          </Card>
 
         {/* Stacked Tables: One-Time vs Recurring Line Items */}
         <Card style={{ padding: 0 }}>
@@ -211,6 +222,7 @@ export default function BillingDetailPage({ params }: { params: Promise<{ id: st
           </div>
         </Modal>
       </div>
+      </RoleGuard>
     </InternalShell>
   )
 }

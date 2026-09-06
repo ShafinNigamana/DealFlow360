@@ -1,6 +1,8 @@
 'use client'
 
 import React, { useEffect, useState, use } from 'react'
+import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { PortalShell } from '@/components/shell/PortalShell'
 import { Card, CardHeader } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -8,14 +10,18 @@ import { Badge } from '@/components/ui/Badge'
 import { Input } from '@/components/ui/Input'
 import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from '@/components/ui/Table'
 import { QuotationDTO } from '@/types/api-contracts'
-import { MessageSquare, Send, ShieldAlert, CheckCircle2 } from 'lucide-react'
+import { MessageSquare, Send, ShieldAlert, CheckCircle2, AlertOctagon } from 'lucide-react'
 import { formatDisplayId } from '@/lib/formatters'
 
 export default function CustomerPortalPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: quotationId } = use(params)
+  const router = useRouter()
+  const { data: session, status } = useSession()
+  const userRole = session?.user?.role || ''
 
   const [quote, setQuote] = useState<QuotationDTO | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [accessDenied, setAccessDenied] = useState(false)
   const [counterDiscount, setCounterDiscount] = useState<number | ''>('')
   const [commentText, setCommentText] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -25,6 +31,10 @@ export default function CustomerPortalPage({ params }: { params: Promise<{ id: s
     setIsLoading(true)
     try {
       const res = await fetch(`/api/quotations/${quotationId}`)
+      if (res.status === 403) {
+        setAccessDenied(true)
+        return
+      }
       if (res.ok) setQuote(await res.json())
     } catch (err: any) {
       console.error(err)
@@ -34,18 +44,23 @@ export default function CustomerPortalPage({ params }: { params: Promise<{ id: s
   }
 
   useEffect(() => {
-    fetchQuote()
-  }, [quotationId])
+    if (status === 'unauthenticated') {
+      router.replace('/login')
+    } else if (status === 'authenticated') {
+      fetchQuote()
+    }
+  }, [status, quotationId])
 
   const handleSendNegotiation = async () => {
     if (!commentText) return
     setIsSubmitting(true)
     try {
+      const authorType = userRole === 'CUSTOMER' ? 'CUSTOMER' : userRole === 'MANAGER' ? 'MANAGER' : 'REP'
       const res = await fetch(`/api/quotations/${quotationId}/negotiations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          authorType: 'CUSTOMER',
+          authorType,
           comment: commentText,
           counterDiscountPercent: counterDiscount !== '' ? Number(counterDiscount) : undefined,
         }),
@@ -93,6 +108,28 @@ export default function CustomerPortalPage({ params }: { params: Promise<{ id: s
   }
 
   const subtotal = quote?.lines?.reduce((s, l) => s + Number(l.lineTotal), 0) || 0
+
+  if (accessDenied) {
+    return (
+      <PortalShell customerName="Unauthorized">
+        <div style={{ padding: '60px 24px', textAlign: 'center', maxWidth: '480px', margin: '0 auto' }}>
+          <div style={{ width: '48px', height: '48px', borderRadius: '12px', backgroundColor: '#FEF2F2', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#DC2626', margin: '0 auto 16px' }}>
+            <AlertOctagon size={24} />
+          </div>
+          <h2 style={{ fontSize: '18px', fontWeight: 600, color: '#0F172A', marginBottom: '8px' }}>Quotation Access Restricted</h2>
+          <p style={{ fontSize: '14px', color: '#64748B', lineHeight: '1.5', marginBottom: '20px' }}>
+            You do not have permission to view or negotiate this quotation. Customer portal users can only access quotations issued to their specific account.
+          </p>
+          <button
+            onClick={() => router.push('/login')}
+            style={{ padding: '8px 16px', backgroundColor: '#4F46E5', color: '#FFF', borderRadius: '6px', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: 500 }}
+          >
+            Return to Sign In
+          </button>
+        </div>
+      </PortalShell>
+    )
+  }
 
   return (
     <PortalShell customerName={quote?.customer?.name}>
@@ -249,9 +286,15 @@ export default function CustomerPortalPage({ params }: { params: Promise<{ id: s
                   <Button variant="secondary" onClick={handleSendNegotiation} isLoading={isSubmitting}>
                     <MessageSquare size={14} /> Send Counter Request
                   </Button>
-                  <Button variant="primary" onClick={handleConfirmQuote} isLoading={isConfirming}>
-                    <CheckCircle2 size={14} /> Confirm & Accept Quote
-                  </Button>
+                  {userRole === 'CUSTOMER' ? (
+                    <Button variant="primary" onClick={handleConfirmQuote} isLoading={isConfirming}>
+                      <CheckCircle2 size={14} /> Confirm & Accept Quote
+                    </Button>
+                  ) : (
+                    <Button variant="secondary" disabled style={{ opacity: 0.65, cursor: 'not-allowed' }} title="Only customer can accept in portal">
+                      <CheckCircle2 size={14} /> Confirm (Preview Mode)
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>

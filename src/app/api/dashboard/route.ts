@@ -1,11 +1,11 @@
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth-guard'
-import { QuotationStatus, DealAlertStatus } from '@prisma/client'
+import { QuotationStatus, DealAlertStatus, UserRole } from '@prisma/client'
 import { NextResponse } from 'next/server'
 
 // GET /api/dashboard — Metrics & Executive Dashboard Aggregation
 export async function GET() {
-  const { errorResponse } = await requireAuth()
+  const { errorResponse } = await requireAuth([UserRole.REP, UserRole.MANAGER, UserRole.FINANCE, UserRole.ADMIN])
   if (errorResponse) return errorResponse
 
   try {

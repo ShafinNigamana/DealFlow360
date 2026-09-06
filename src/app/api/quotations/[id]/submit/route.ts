@@ -1,10 +1,11 @@
 import { requireAuth } from '@/lib/auth-guard'
 import { routeQuotationForApproval } from '@/lib/services/approval/routingEngine'
+import { UserRole } from '@prisma/client'
 import { NextResponse } from 'next/server'
 
 // POST /api/quotations/[id]/submit — Submit quotation for approval
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { errorResponse, session } = await requireAuth()
+  const { errorResponse, session } = await requireAuth([UserRole.REP, UserRole.MANAGER])
   if (errorResponse) return errorResponse
 
   try {

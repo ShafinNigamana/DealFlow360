@@ -3,9 +3,9 @@ import { requireAuth } from '@/lib/auth-guard'
 import { UserRole, BackorderStatus } from '@prisma/client'
 import { NextResponse } from 'next/server'
 
-// PATCH /api/backorders/[id] — Update backorder status or quantity (ADMIN/MANAGER)
+// PATCH /api/backorders/[id] — Update backorder status or quantity (FINANCE/MANAGER/ADMIN)
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { errorResponse } = await requireAuth([UserRole.ADMIN, UserRole.MANAGER])
+  const { errorResponse } = await requireAuth([UserRole.FINANCE, UserRole.MANAGER, UserRole.ADMIN])
   if (errorResponse) return errorResponse
 
   try {

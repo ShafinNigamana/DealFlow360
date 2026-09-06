@@ -1,11 +1,11 @@
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth-guard'
-import { DealAlertStatus } from '@prisma/client'
+import { DealAlertStatus, UserRole } from '@prisma/client'
 import { NextResponse } from 'next/server'
 
 // PATCH /api/deal-alerts/[id] — Acknowledge or escalate deal alert
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { errorResponse } = await requireAuth()
+  const { errorResponse } = await requireAuth([UserRole.MANAGER])
   if (errorResponse) return errorResponse
 
   try {

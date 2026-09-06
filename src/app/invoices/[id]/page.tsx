@@ -2,7 +2,9 @@
 
 import React, { useEffect, useState, use } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { InternalShell } from '@/components/shell/InternalShell'
+import { RoleGuard } from '@/components/auth/RoleGuard'
 import { Card, CardHeader } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -17,6 +19,8 @@ import { formatDisplayId } from '@/lib/formatters'
 export default function InvoiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: invoiceId } = use(params)
   const router = useRouter()
+  const { data: session } = useSession()
+  const userRole = session?.user?.role || ''
 
   const [invoice, setInvoice] = useState<InvoiceDTO | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -87,7 +91,8 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
 
   return (
     <InternalShell title={`Invoice Detail — #${formatDisplayId(invoiceId)}`}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <RoleGuard allowedRoles={['FINANCE', 'MANAGER']}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         {/* Invoice Summary Header */}
         <Card>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -161,9 +166,15 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
           </Button>
 
           {invoice?.status !== 'PAID' && (
-            <Button variant="primary" onClick={() => setIsPaymentModalOpen(true)}>
-              <CreditCard size={14} /> Record Payment
-            </Button>
+            userRole === 'FINANCE' ? (
+              <Button variant="primary" onClick={() => setIsPaymentModalOpen(true)}>
+                <CreditCard size={14} /> Record Payment
+              </Button>
+            ) : (
+              <span style={{ fontSize: '12px', color: '#71717A', fontStyle: 'italic', alignSelf: 'center' }}>
+                Payment recording restricted to Finance
+              </span>
+            )
           )}
         </div>
 
@@ -204,6 +215,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
           </div>
         </Modal>
       </div>
+      </RoleGuard>
     </InternalShell>
   )
 }

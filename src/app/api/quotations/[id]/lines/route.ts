@@ -1,11 +1,12 @@
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth-guard'
 import { recalculateQuotationLineTotal } from '@/lib/services/quotation/totals'
+import { UserRole } from '@prisma/client'
 import { NextResponse } from 'next/server'
 
 // GET /api/quotations/[id]/lines — List lines for a quotation
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { errorResponse } = await requireAuth()
+  const { errorResponse } = await requireAuth([UserRole.REP, UserRole.MANAGER])
   if (errorResponse) return errorResponse
 
   try {
@@ -28,7 +29,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
 // POST /api/quotations/[id]/lines — Add line item to a DRAFT quotation
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { errorResponse } = await requireAuth()
+  const { errorResponse } = await requireAuth([UserRole.REP, UserRole.MANAGER])
   if (errorResponse) return errorResponse
 
   try {

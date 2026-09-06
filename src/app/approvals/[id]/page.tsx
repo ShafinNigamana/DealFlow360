@@ -3,6 +3,7 @@
 import React, { useEffect, useState, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { InternalShell } from '@/components/shell/InternalShell'
+import { RoleGuard } from '@/components/auth/RoleGuard'
 import { Card, CardHeader } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -102,16 +103,17 @@ export default function ApprovalDetailPage({ params }: { params: Promise<{ id: s
 
   return (
     <InternalShell title={`Approval Detail — #${formatDisplayId(quotationId)}`}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        {/* Header Overview Card */}
-        <Card>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#18181B' }}>
-                  {quote?.customer?.name || 'Customer Name'}
-                </h2>
-                <Badge variant={quote?.status === 'APPROVED' ? 'success' : quote?.status === 'PENDING_APPROVAL' ? 'warning' : 'danger'}>
+      <RoleGuard allowedRoles={['MANAGER', 'FINANCE']}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {/* Header Overview Card */}
+          <Card>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#18181B' }}>
+                    {quote?.customer?.name || 'Customer Name'}
+                  </h2>
+                  <Badge variant={quote?.status === 'APPROVED' ? 'success' : quote?.status === 'PENDING_APPROVAL' ? 'warning' : 'danger'}>
                   {quote?.status}
                 </Badge>
               </div>
@@ -277,6 +279,7 @@ export default function ApprovalDetailPage({ params }: { params: Promise<{ id: s
           </div>
         </Modal>
       </div>
+      </RoleGuard>
     </InternalShell>
   )
 }

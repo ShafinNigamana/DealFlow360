@@ -1,11 +1,11 @@
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth-guard'
-import { BackorderStatus } from '@prisma/client'
+import { BackorderStatus, UserRole } from '@prisma/client'
 import { NextResponse } from 'next/server'
 
 // GET /api/backorders — List backorders (filter by status)
 export async function GET(req: Request) {
-  const { errorResponse } = await requireAuth()
+  const { errorResponse } = await requireAuth([UserRole.FINANCE, UserRole.MANAGER])
   if (errorResponse) return errorResponse
 
   try {

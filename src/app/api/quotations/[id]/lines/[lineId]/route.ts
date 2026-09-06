@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth-guard'
 import { recalculateQuotationLineTotal } from '@/lib/services/quotation/totals'
+import { UserRole } from '@prisma/client'
 import { NextResponse } from 'next/server'
 
 // PATCH /api/quotations/[id]/lines/[lineId] — Update quantity or discount on a line item
@@ -8,7 +9,7 @@ export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string; lineId: string }> }
 ) {
-  const { errorResponse } = await requireAuth()
+  const { errorResponse } = await requireAuth([UserRole.REP, UserRole.MANAGER])
   if (errorResponse) return errorResponse
 
   try {
@@ -66,7 +67,7 @@ export async function DELETE(
   req: Request,
   { params }: { params: Promise<{ id: string; lineId: string }> }
 ) {
-  const { errorResponse } = await requireAuth()
+  const { errorResponse } = await requireAuth([UserRole.REP, UserRole.MANAGER])
   if (errorResponse) return errorResponse
 
   try {

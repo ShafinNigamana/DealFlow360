@@ -1,11 +1,11 @@
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth-guard'
-import { SubscriptionStatus } from '@prisma/client'
+import { SubscriptionStatus, UserRole } from '@prisma/client'
 import { NextResponse } from 'next/server'
 
 // GET /api/subscriptions — List subscriptions (filter by status)
 export async function GET(req: Request) {
-  const { errorResponse } = await requireAuth()
+  const { errorResponse } = await requireAuth([UserRole.REP, UserRole.MANAGER, UserRole.FINANCE])
   if (errorResponse) return errorResponse
 
   try {
@@ -39,7 +39,7 @@ export async function GET(req: Request) {
 
 // POST /api/subscriptions — Create/Activate a subscription for a quotation line
 export async function POST(req: Request) {
-  const { errorResponse } = await requireAuth()
+  const { errorResponse } = await requireAuth([UserRole.REP, UserRole.MANAGER, UserRole.FINANCE])
   if (errorResponse) return errorResponse
 
   try {

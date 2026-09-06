@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { InternalShell } from '@/components/shell/InternalShell'
+import { RoleGuard } from '@/components/auth/RoleGuard'
 import { Card, CardHeader } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { DashboardMetricsResponse } from '@/types/api-contracts'
@@ -33,7 +34,8 @@ export default function AdminReportsPage() {
 
   return (
     <InternalShell title="Reporting & Analytics Dashboard">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <RoleGuard allowedRoles={['ADMIN', 'MANAGER']}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         {error && (
           <div style={{ padding: '12px', borderRadius: '6px', backgroundColor: '#FEF2F2', color: '#B91C1C', fontSize: '13px' }}>
             {error}
@@ -134,6 +136,7 @@ export default function AdminReportsPage() {
           )}
         </Card>
       </div>
+      </RoleGuard>
     </InternalShell>
   )
 }

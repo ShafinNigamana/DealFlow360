@@ -1,10 +1,13 @@
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth-guard'
-import { InvoiceStatus } from '@prisma/client'
+import { InvoiceStatus, UserRole } from '@prisma/client'
 import { NextResponse } from 'next/server'
 
 // GET /api/payments — List payments
 export async function GET(req: Request) {
+  const { errorResponse } = await requireAuth([UserRole.FINANCE, UserRole.MANAGER])
+  if (errorResponse) return errorResponse
+
   try {
     const { searchParams } = new URL(req.url)
     const invoiceId = searchParams.get('invoiceId')
@@ -28,7 +31,7 @@ export async function GET(req: Request) {
 
 // POST /api/payments — Record a payment against an invoice
 export async function POST(req: Request) {
-  const { errorResponse } = await requireAuth()
+  const { errorResponse } = await requireAuth([UserRole.FINANCE])
   if (errorResponse) return errorResponse
 
   try {

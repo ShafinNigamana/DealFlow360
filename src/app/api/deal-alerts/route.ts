@@ -1,12 +1,12 @@
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth-guard'
 import { evaluateDealHealthAlerts } from '@/lib/services/alerts/dealHealth'
-import { DealAlertStatus } from '@prisma/client'
+import { DealAlertStatus, UserRole } from '@prisma/client'
 import { NextResponse } from 'next/server'
 
 // GET /api/deal-alerts — List deal health alerts
 export async function GET(req: Request) {
-  const { errorResponse } = await requireAuth()
+  const { errorResponse } = await requireAuth([UserRole.MANAGER])
   if (errorResponse) return errorResponse
 
   try {

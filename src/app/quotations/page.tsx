@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { InternalShell } from '@/components/shell/InternalShell'
+import { RoleGuard } from '@/components/auth/RoleGuard'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -95,15 +96,16 @@ export default function QuotationsPage() {
 
   return (
     <InternalShell title="Quotations Pipeline">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        {/* Top Controls Bar */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Button variant="primary" onClick={() => setIsModalOpen(true)}>
-            <Plus size={14} />
-            New Quotation
-          </Button>
+      <RoleGuard allowedRoles={['REP', 'MANAGER']}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* Top Controls Bar */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Button variant="primary" onClick={() => setIsModalOpen(true)}>
+              <Plus size={14} />
+              New Quotation
+            </Button>
 
-          {/* View Mode Switcher */}
+            {/* View Mode Switcher */}
           <div style={{ display: 'flex', gap: '4px', backgroundColor: '#E4E4E7', padding: '2px', borderRadius: '6px' }}>
             <button
               onClick={() => setViewMode('kanban')}
@@ -298,6 +300,7 @@ export default function QuotationsPage() {
           </div>
         </Modal>
       </div>
+      </RoleGuard>
     </InternalShell>
   )
 }

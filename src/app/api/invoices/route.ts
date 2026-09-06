@@ -1,10 +1,13 @@
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth-guard'
-import { InvoiceStatus } from '@prisma/client'
+import { InvoiceStatus, UserRole } from '@prisma/client'
 import { NextResponse } from 'next/server'
 
 // GET /api/invoices — List invoices
 export async function GET(req: Request) {
+  const { errorResponse } = await requireAuth([UserRole.FINANCE, UserRole.MANAGER])
+  if (errorResponse) return errorResponse
+
   try {
     const { searchParams } = new URL(req.url)
     const quotationId = searchParams.get('quotationId')
@@ -31,7 +34,7 @@ export async function GET(req: Request) {
 
 // POST /api/invoices — Create invoice from quotation
 export async function POST(req: Request) {
-  const { errorResponse } = await requireAuth()
+  const { errorResponse } = await requireAuth([UserRole.FINANCE])
   if (errorResponse) return errorResponse
 
   try {

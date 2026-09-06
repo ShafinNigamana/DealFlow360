@@ -3,7 +3,9 @@
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { InternalShell } from '@/components/shell/InternalShell'
+import { RoleGuard } from '@/components/auth/RoleGuard'
 import { Card, CardHeader } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -14,6 +16,8 @@ import { formatDisplayId } from '@/lib/formatters'
 
 export default function DashboardPage() {
   const router = useRouter()
+  const { data: session } = useSession()
+  const userRole = session?.user?.role || ''
   const [data, setData] = useState<DashboardMetricsResponse | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
@@ -61,96 +65,101 @@ export default function DashboardPage() {
 
   return (
     <InternalShell title="Sales Dashboard">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        {/* Metric Cards Row */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
-          <Card>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div>
-                <span style={{ fontSize: '12px', color: '#71717A', fontWeight: 500 }}>Pending Approvals</span>
-                <div style={{ fontSize: '24px', fontWeight: 700, color: '#18181B', marginTop: '4px' }}>
-                  {isLoading ? '...' : data?.summary.pendingApprovalCount ?? 0}
+      <RoleGuard allowedRoles={['REP', 'MANAGER', 'FINANCE', 'ADMIN']}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {/* Metric Cards Row */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
+            <Card>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <span style={{ fontSize: '12px', color: '#71717A', fontWeight: 500 }}>Pending Approvals</span>
+                  <div style={{ fontSize: '24px', fontWeight: 700, color: '#18181B', marginTop: '4px' }}>
+                    {isLoading ? '...' : data?.summary.pendingApprovalCount ?? 0}
+                  </div>
+                </div>
+                <div
+                  style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '6px',
+                    backgroundColor: '#FFFBEB',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <CheckCircle size={18} color="#B45309" />
                 </div>
               </div>
-              <div
-                style={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '6px',
-                  backgroundColor: '#FFFBEB',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <CheckCircle size={18} color="#B45309" />
-              </div>
-            </div>
-          </Card>
+            </Card>
 
-          <Card>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div>
-                <span style={{ fontSize: '12px', color: '#71717A', fontWeight: 500 }}>Open Quotations</span>
-                <div style={{ fontSize: '24px', fontWeight: 700, color: '#18181B', marginTop: '4px' }}>
-                  {isLoading ? '...' : (data?.summary.draftCount ?? 0) + (data?.summary.pendingApprovalCount ?? 0)}
+            <Card>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <span style={{ fontSize: '12px', color: '#71717A', fontWeight: 500 }}>Open Quotations</span>
+                  <div style={{ fontSize: '24px', fontWeight: 700, color: '#18181B', marginTop: '4px' }}>
+                    {isLoading ? '...' : (data?.summary.draftCount ?? 0) + (data?.summary.pendingApprovalCount ?? 0)}
+                  </div>
+                </div>
+                <div
+                  style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '6px',
+                    backgroundColor: '#EEF2FF',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <FileText size={18} color="#4F46E5" />
                 </div>
               </div>
-              <div
-                style={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '6px',
-                  backgroundColor: '#EEF2FF',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <FileText size={18} color="#4F46E5" />
-              </div>
-            </div>
-          </Card>
+            </Card>
 
-          <Card>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div>
-                <span style={{ fontSize: '12px', color: '#71717A', fontWeight: 500 }}>At-Risk Deals</span>
-                <div style={{ fontSize: '24px', fontWeight: 700, color: '#18181B', marginTop: '4px' }}>
-                  {isLoading ? '...' : data?.summary.openAlertsCount ?? 0}
+            <Card>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <span style={{ fontSize: '12px', color: '#71717A', fontWeight: 500 }}>At-Risk Deals</span>
+                  <div style={{ fontSize: '24px', fontWeight: 700, color: '#18181B', marginTop: '4px' }}>
+                    {isLoading ? '...' : data?.summary.openAlertsCount ?? 0}
+                  </div>
+                </div>
+                <div
+                  style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '6px',
+                    backgroundColor: '#FEF2F2',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Activity size={18} color="#B91C1C" />
                 </div>
               </div>
-              <div
-                style={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '6px',
-                  backgroundColor: '#FEF2F2',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Activity size={18} color="#B91C1C" />
-              </div>
-            </div>
-          </Card>
-        </div>
+            </Card>
+          </div>
 
-        {/* Action Toolbar */}
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <Link href="/quotations">
-            <Button variant="primary">
-              <Plus size={14} />
-              New Quotation
-            </Button>
-          </Link>
-          <Link href="/approvals">
-            <Button variant="secondary">
-              View Approvals
-            </Button>
-          </Link>
-        </div>
+          {/* Action Toolbar */}
+          <div style={{ display: 'flex', gap: '10px' }}>
+            {(userRole === 'REP' || userRole === 'MANAGER') && (
+              <Link href="/quotations">
+                <Button variant="primary">
+                  <Plus size={14} />
+                  New Quotation
+                </Button>
+              </Link>
+            )}
+            {(userRole === 'MANAGER' || userRole === 'FINANCE') && (
+              <Link href="/approvals">
+                <Button variant="secondary">
+                  View Approvals
+                </Button>
+              </Link>
+            )}
+          </div>
 
         {/* Error Notice */}
         {error && (
@@ -220,6 +229,7 @@ export default function DashboardPage() {
           )}
         </Card>
       </div>
+      </RoleGuard>
     </InternalShell>
   )
 }

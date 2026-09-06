@@ -1,11 +1,11 @@
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth-guard'
-import { BillingEntryStatus } from '@prisma/client'
+import { BillingEntryStatus, UserRole } from '@prisma/client'
 import { NextResponse } from 'next/server'
 
 // GET /api/billing-entries — List billing entries
 export async function GET(req: Request) {
-  const { errorResponse } = await requireAuth()
+  const { errorResponse } = await requireAuth([UserRole.FINANCE, UserRole.MANAGER])
   if (errorResponse) return errorResponse
 
   try {
@@ -35,7 +35,7 @@ export async function GET(req: Request) {
 
 // PATCH /api/billing-entries — Update billing entry status
 export async function PATCH(req: Request) {
-  const { errorResponse } = await requireAuth()
+  const { errorResponse } = await requireAuth([UserRole.FINANCE])
   if (errorResponse) return errorResponse
 
   try {

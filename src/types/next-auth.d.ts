@@ -1,18 +1,20 @@
 import { UserRole } from '@prisma/client'
 import { DefaultSession } from 'next-auth'
 
+export type AppRole = UserRole | 'CUSTOMER'
+
 declare module 'next-auth' {
   interface User {
     id: string
     email: string
     name: string
-    role: UserRole
+    role: AppRole
   }
 
   interface Session {
     user: {
       id: string
-      role: UserRole
+      role: AppRole
     } & DefaultSession['user']
   }
 }
@@ -20,6 +22,7 @@ declare module 'next-auth' {
 declare module 'next-auth/jwt' {
   interface JWT {
     id?: string
-    role?: UserRole
+    role?: AppRole
   }
 }
+

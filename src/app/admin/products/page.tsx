@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { InternalShell } from '@/components/shell/InternalShell'
+import { RoleGuard } from '@/components/auth/RoleGuard'
 import { Card, CardHeader } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -75,15 +76,16 @@ export default function AdminProductsPage() {
 
   return (
     <InternalShell title="Product & Price List Management">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        {/* Metric Cards Header */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
-          <Card>
-            <span style={{ fontSize: '12px', color: '#71717A', fontWeight: 500 }}>Total Products</span>
-            <div style={{ fontSize: '24px', fontWeight: 700, color: '#18181B', marginTop: '4px' }}>
-              {products.length}
-            </div>
-          </Card>
+      <RoleGuard allowedRoles={['ADMIN']}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {/* Metric Cards Header */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+            <Card>
+              <span style={{ fontSize: '12px', color: '#71717A', fontWeight: 500 }}>Total Products</span>
+              <div style={{ fontSize: '24px', fontWeight: 700, color: '#18181B', marginTop: '4px' }}>
+                {products.length}
+              </div>
+            </Card>
           <Card>
             <span style={{ fontSize: '12px', color: '#71717A', fontWeight: 500 }}>Product Categories</span>
             <div style={{ fontSize: '24px', fontWeight: 700, color: '#18181B', marginTop: '4px' }}>
@@ -183,6 +185,7 @@ export default function AdminProductsPage() {
           </div>
         </Modal>
       </div>
+      </RoleGuard>
     </InternalShell>
   )
 }

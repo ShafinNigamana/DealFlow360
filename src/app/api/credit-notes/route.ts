@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server'
 
 // GET /api/credit-notes — List credit notes
 export async function GET(req: Request) {
-  const { errorResponse } = await requireAuth()
+  const { errorResponse } = await requireAuth([UserRole.FINANCE, UserRole.MANAGER])
   if (errorResponse) return errorResponse
 
   try {
@@ -33,9 +33,9 @@ export async function GET(req: Request) {
   }
 }
 
-// POST /api/credit-notes — Issue a credit note (ADMIN/MANAGER/FINANCE)
+// POST /api/credit-notes — Issue a credit note (FINANCE)
 export async function POST(req: Request) {
-  const { errorResponse } = await requireAuth([UserRole.ADMIN, UserRole.MANAGER, UserRole.FINANCE])
+  const { errorResponse } = await requireAuth([UserRole.FINANCE])
   if (errorResponse) return errorResponse
 
   try {
