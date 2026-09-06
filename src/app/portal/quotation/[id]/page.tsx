@@ -196,7 +196,7 @@ export default function CustomerPortalPage({ params }: { params: Promise<{ id: s
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
             {!quote?.negotiationComments || quote.negotiationComments.length === 0 ? (
-              <div style={{ padding: '16px', textAlign: 'center', color: '#A1A1AA', fontSize: '12px' }}>
+              <div style={{ padding: '16px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '12px' }}>
                 No negotiation comments yet. Use the form below to propose changes or ask questions.
               </div>
             ) : (
@@ -205,25 +205,40 @@ export default function CustomerPortalPage({ params }: { params: Promise<{ id: s
                   key={comm.id}
                   style={{
                     padding: '12px 16px',
-                    borderRadius: '8px',
-                    border: '1px solid #E4E4E7',
-                    backgroundColor: comm.authorType === 'CUSTOMER' ? '#EEF2FF' : '#FFFFFF',
+                    borderRadius: '4px',
+                    border: comm.authorType === 'CUSTOMER' ? '1px solid var(--status-pending-border)' : '1px solid var(--border-subtle)',
+                    backgroundColor: comm.authorType === 'CUSTOMER' ? 'var(--status-pending-subtle)' : '#FFFFFF',
                     alignSelf: comm.authorType === 'CUSTOMER' ? 'flex-end' : 'flex-start',
                     maxWidth: '85%',
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px', gap: '12px' }}>
-                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#18181B' }}>
-                      {comm.authorType === 'CUSTOMER' ? 'You (Customer)' : 'Sales Team'}
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: comm.authorType === 'CUSTOMER' ? 'var(--copper-700)' : 'var(--ink-900)' }}>
+                      {comm.authorType === 'CUSTOMER' ? 'You (Customer)' : comm.authorType === 'MANAGER' ? 'Sales Manager' : 'Sales Representative'}
                     </span>
-                    <span style={{ fontSize: '11px', color: '#71717A' }}>
-                      {new Date(comm.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    <span style={{ fontSize: '10.5px', color: 'var(--text-secondary)', fontVariantNumeric: 'tabular-nums' }}>
+                      {new Date(comm.createdAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
-                  <p style={{ fontSize: '13px', color: '#18181B' }}>{comm.comment}</p>
+                  <p style={{ fontSize: '13px', color: 'var(--ink-900)', margin: 0, lineHeight: '1.4' }}>{comm.comment}</p>
                   {comm.counterDiscountPercent && (
                     <div style={{ marginTop: '6px' }}>
-                      <Badge variant="accent">Counter Discount Requested: {Number(comm.counterDiscountPercent)}%</Badge>
+                      <span
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          color: 'var(--copper-700)',
+                          backgroundColor: '#FFFFFF',
+                          border: '1px solid var(--status-pending-border)',
+                          padding: '2px 8px',
+                          borderRadius: '3px',
+                        }}
+                      >
+                        Counter Discount Requested: {Number(comm.counterDiscountPercent)}%
+                      </span>
                     </div>
                   )}
                 </div>
@@ -237,21 +252,21 @@ export default function CustomerPortalPage({ params }: { params: Promise<{ id: s
               style={{
                 marginTop: '16px',
                 padding: '16px',
-                backgroundColor: '#F0FDF4',
-                border: '1px solid #BBF7D0',
-                borderRadius: '8px',
+                backgroundColor: 'var(--status-approved-subtle)',
+                border: '1px solid var(--status-approved-border)',
+                borderRadius: '4px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <CheckCircle2 size={20} color="#16A34A" />
+                <CheckCircle2 size={20} color="var(--status-approved)" />
                 <div>
-                  <div style={{ fontSize: '14px', fontWeight: 600, color: '#166534' }}>
+                  <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--status-approved)' }}>
                     Quotation Confirmed & Accepted
                   </div>
-                  <div style={{ fontSize: '12px', color: '#15803D' }}>
+                  <div style={{ fontSize: '12px', color: 'var(--ink-900)' }}>
                     This proposal is confirmed. Order fulfillment and invoicing are underway.
                   </div>
                 </div>
@@ -259,7 +274,29 @@ export default function CustomerPortalPage({ params }: { params: Promise<{ id: s
               <Badge variant="success">Confirmed Order</Badge>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', borderTop: '1px solid #E4E4E7', paddingTop: '16px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', borderTop: '1px solid var(--border-subtle)', paddingTop: '16px' }}>
+              {/* Under Governance Notice if pending approval */}
+              {quote?.status === 'PENDING_APPROVAL' && (
+                <div
+                  style={{
+                    padding: '10px 14px',
+                    backgroundColor: 'var(--status-pending-subtle)',
+                    border: '1px solid var(--status-pending-border)',
+                    borderRadius: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    fontSize: '12px',
+                    color: 'var(--copper-700)',
+                  }}
+                >
+                  <ShieldAlert size={18} color="var(--copper-600)" />
+                  <div>
+                    <strong>Under Governance Review:</strong> Your requested terms or discount exceeded standard discount limits and have been routed to Sales Management / Finance. Once approved, you will be able to confirm and lock this quote.
+                  </div>
+                </div>
+              )}
+
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '12px' }}>
                 <Input
                   label="Requested Counter Discount (%)"
@@ -276,10 +313,10 @@ export default function CustomerPortalPage({ params }: { params: Promise<{ id: s
                 />
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ fontSize: '11px', color: '#71717A', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <ShieldAlert size={14} color="#4338CA" />
-                  Counter-proposals exceeding discount ceilings automatically re-trigger manager approval.
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                <div style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <ShieldAlert size={14} color="var(--copper-600)" />
+                  Counter-proposals exceeding discount ceilings automatically re-trigger manager/finance approval.
                 </div>
 
                 <div style={{ display: 'flex', gap: '8px' }}>
@@ -287,9 +324,21 @@ export default function CustomerPortalPage({ params }: { params: Promise<{ id: s
                     <MessageSquare size={14} /> Send Counter Request
                   </Button>
                   {userRole === 'CUSTOMER' ? (
-                    <Button variant="primary" onClick={handleConfirmQuote} isLoading={isConfirming}>
-                      <CheckCircle2 size={14} /> Confirm & Accept Quote
-                    </Button>
+                    quote?.status === 'APPROVED' || quote?.status === 'SENT' ? (
+                      <Button variant="primary" onClick={handleConfirmQuote} isLoading={isConfirming}>
+                        <CheckCircle2 size={14} /> Confirm & Accept Quote
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="secondary"
+                        disabled
+                        style={{ opacity: 0.65, cursor: 'not-allowed' }}
+                        title={quote?.status === 'PENDING_APPROVAL' ? 'Awaiting manager/finance approval before order confirmation' : 'Proposal in draft review'}
+                      >
+                        <CheckCircle2 size={14} />
+                        {quote?.status === 'PENDING_APPROVAL' ? 'Awaiting Management Approval' : 'In Preparation'}
+                      </Button>
+                    )
                   ) : (
                     <Button variant="secondary" disabled style={{ opacity: 0.65, cursor: 'not-allowed' }} title="Only customer can accept in portal">
                       <CheckCircle2 size={14} /> Confirm (Preview Mode)

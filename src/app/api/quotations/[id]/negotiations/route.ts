@@ -37,7 +37,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
 // POST /api/quotations/[id]/negotiations — Add comment or counter-proposal
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { errorResponse, session } = await requireAuth([UserRole.REP, UserRole.MANAGER, 'CUSTOMER'])
+  const { errorResponse, session } = await requireAuth(['REP', 'MANAGER', 'FINANCE', 'ADMIN', 'CUSTOMER'])
   if (errorResponse) return errorResponse
 
   try {
@@ -57,7 +57,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     if (role === 'CUSTOMER' && authorType !== NegotiationAuthorType.CUSTOMER) {
       return NextResponse.json({ error: 'Forbidden: Customers cannot post as sales team' }, { status: 403 })
     }
-    if ((role === 'REP' || role === 'MANAGER') && authorType === NegotiationAuthorType.CUSTOMER) {
+    if ((role === 'REP' || role === 'MANAGER' || role === 'FINANCE' || role === 'ADMIN') && authorType === NegotiationAuthorType.CUSTOMER) {
       return NextResponse.json({ error: 'Forbidden: Internal users cannot post as customer' }, { status: 403 })
     }
 

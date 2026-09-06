@@ -59,7 +59,13 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
 // PATCH /api/quotations/[id] — Update quotation (customer, status transitions)
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { errorResponse } = await requireAuth([UserRole.REP, UserRole.MANAGER, UserRole.FINANCE])
+  const { errorResponse, session } = await requireAuth([
+    'REP',
+    'MANAGER',
+    'FINANCE',
+    'ADMIN',
+    'CUSTOMER',
+  ])
   if (errorResponse) return errorResponse
 
   try {
@@ -71,15 +77,34 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       return NextResponse.json({ error: 'Quotation not found' }, { status: 404 })
     }
 
+    const role = session!.user.role
+
+    // CUSTOMER role restrictions:
+    // A customer can ONLY confirm an APPROVED or SENT quotation belonging to their account
+    if (role === 'CUSTOMER') {
+      if (quotation.customerId !== session!.user.id) {
+        return NextResponse.json({ error: 'Forbidden: You can only update your own quotations' }, { status: 403 })
+      }
+      if (body.status !== 'CONFIRMED') {
+        return NextResponse.json({ error: 'Forbidden: Customers can only confirm quotations' }, { status: 403 })
+      }
+      if (quotation.status !== 'APPROVED' && quotation.status !== 'SENT') {
+        return NextResponse.json(
+          { error: `Cannot confirm quotation while in ${quotation.status} status. It must be APPROVED or SENT first.` },
+          { status: 400 }
+        )
+      }
+    }
+
     const updateData: any = {}
 
-    // Status transitions (e.g., customer confirms an APPROVED quote)
+    // Status transitions (e.g., customer confirms an APPROVED or SENT quote)
     if (body.status !== undefined) {
       const allowedTransitions: Record<string, string[]> = {
-        APPROVED: ['CONFIRMED'],
+        APPROVED: ['CONFIRMED', 'CANCELLED'],
+        SENT: ['CONFIRMED', 'CANCELLED'],
         CONFIRMED: ['FULFILLED'],
         DRAFT: ['CANCELLED'],
-        SENT: ['CANCELLED'],
       }
       const allowed = allowedTransitions[quotation.status] || []
       if (!allowed.includes(body.status)) {

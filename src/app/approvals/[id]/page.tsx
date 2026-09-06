@@ -12,7 +12,7 @@ import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from '@/components/ui/Table'
 import { QuotationDTO } from '@/types/api-contracts'
-import { CheckCircle, XCircle, RotateCcw } from 'lucide-react'
+import { CheckCircle, XCircle, RotateCcw, MessageSquare } from 'lucide-react'
 import { formatDisplayId } from '@/lib/formatters'
 
 export default function ApprovalDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -263,6 +263,79 @@ export default function ApprovalDetailPage({ params }: { params: Promise<{ id: s
               </Table>
             </Card>
           )}
+
+          {/* Customer Negotiation & Counter-Offer Dialogue Card */}
+          <Card style={{ padding: '16px 20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <MessageSquare size={16} color="var(--copper-500)" />
+                <h3 style={{ fontSize: '13px', fontWeight: 700, color: 'var(--ink-900)' }}>
+                  Customer Counter-Offer & Negotiation Dialogue ({quote?.negotiationComments?.length || 0})
+                </h3>
+              </div>
+              <span style={{ fontSize: '11.5px', color: 'var(--text-secondary)' }}>
+                Account: {quote?.customer?.name || 'Customer'}
+              </span>
+            </div>
+
+            {/* Comments Feed */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {!quote?.negotiationComments || quote.negotiationComments.length === 0 ? (
+                <div style={{ padding: '16px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '12px' }}>
+                  No customer negotiation notes or counter-proposals on this deal.
+                </div>
+              ) : (
+                quote.negotiationComments.map((comm) => {
+                  const isCustomer = comm.authorType === 'CUSTOMER'
+                  return (
+                    <div
+                      key={comm.id}
+                      style={{
+                        padding: '10px 14px',
+                        borderRadius: '4px',
+                        border: isCustomer ? '1px solid var(--status-pending-border)' : '1px solid var(--border-subtle)',
+                        backgroundColor: isCustomer ? 'var(--status-pending-subtle)' : '#FFFFFF',
+                        alignSelf: isCustomer ? 'flex-start' : 'flex-end',
+                        maxWidth: '90%',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', marginBottom: '4px' }}>
+                        <span style={{ fontSize: '11.5px', fontWeight: 700, color: isCustomer ? 'var(--copper-700)' : 'var(--ink-900)' }}>
+                          {isCustomer ? `${quote?.customer?.name || 'Customer'} (Client Request)` : comm.authorType === 'MANAGER' ? 'Sales Manager' : 'Sales Representative'}
+                        </span>
+                        <span style={{ fontSize: '10.5px', color: 'var(--text-secondary)', fontVariantNumeric: 'tabular-nums' }}>
+                          {new Date(comm.createdAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                      <p style={{ fontSize: '12.5px', color: 'var(--ink-900)', margin: 0, lineHeight: '1.4' }}>
+                        {comm.comment}
+                      </p>
+                      {comm.counterDiscountPercent && (
+                        <div style={{ marginTop: '6px' }}>
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              fontSize: '10.5px',
+                              fontWeight: 700,
+                              color: 'var(--status-rejected)',
+                              backgroundColor: 'var(--status-rejected-subtle)',
+                              border: '1px solid var(--status-rejected-border)',
+                              padding: '2px 6px',
+                              borderRadius: '3px',
+                            }}
+                          >
+                            Requested Counter Discount: {Number(comm.counterDiscountPercent)}%
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })
+              )}
+            </div>
+          </Card>
 
           {/* Action Controls Footer */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', paddingTop: '6px' }}>

@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/Button'
 import { Input, Select } from '@/components/ui/Input'
 import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from '@/components/ui/Table'
 import { QuotationDTO, ProductDTO, UpsellSuggestionDTO, SubscriptionPlanDTO } from '@/types/api-contracts'
-import { Plus, Trash2, Send, ShieldAlert, Sparkles, CheckCircle, Eye } from 'lucide-react'
+import { Plus, Trash2, Send, ShieldAlert, Sparkles, CheckCircle, Eye, MessageSquare } from 'lucide-react'
 import { formatDisplayId } from '@/lib/formatters'
 
 export default function QuotationDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -29,11 +29,41 @@ export default function QuotationDetailPage({ params }: { params: Promise<{ id: 
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  // Staff reply to customer state
+  const [replyText, setReplyText] = useState('')
+  const [isSendingReply, setIsSendingReply] = useState(false)
+
   // Add line form state
   const [selectedProductId, setSelectedProductId] = useState('')
   const [selectedPlanId, setSelectedPlanId] = useState('')
   const [quantity, setQuantity] = useState(1)
   const [discountPercent, setDiscountPercent] = useState(0)
+
+  const handleSendReply = async () => {
+    if (!replyText.trim()) return
+    setIsSendingReply(true)
+    try {
+      const authorType = userRole === 'MANAGER' ? 'MANAGER' : 'REP'
+      const res = await fetch(`/api/quotations/${quotationId}/negotiations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          authorType,
+          comment: replyText.trim(),
+        }),
+      })
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error || 'Failed to send reply')
+      }
+      setReplyText('')
+      await fetchQuoteDetail()
+    } catch (err: any) {
+      alert(err.message)
+    } finally {
+      setIsSendingReply(false)
+    }
+  }
 
   const fetchQuoteDetail = async () => {
     setIsLoading(true)
@@ -484,6 +514,107 @@ export default function QuotationDetailPage({ params }: { params: Promise<{ id: 
               </div>
             </Card>
           )}
+
+          {/* Customer Negotiation & Counter-Offer Dialogue Card */}
+          <Card style={{ padding: '16px 20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <MessageSquare size={16} color="var(--copper-500)" />
+                <h3 style={{ fontSize: '13px', fontWeight: 700, color: 'var(--ink-900)' }}>
+                  Customer Dialogue & Counter-Offers ({quote?.negotiationComments?.length || 0})
+                </h3>
+              </div>
+              <span style={{ fontSize: '11.5px', color: 'var(--text-secondary)' }}>
+                Direct communication with {quote?.customer?.name || 'Customer'}
+              </span>
+            </div>
+
+            {/* Comments Feed */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
+              {!quote?.negotiationComments || quote.negotiationComments.length === 0 ? (
+                <div style={{ padding: '16px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '12px' }}>
+                  No negotiation messages from the customer yet.
+                </div>
+              ) : (
+                quote.negotiationComments.map((comm) => {
+                  const isCustomer = comm.authorType === 'CUSTOMER'
+                  return (
+                    <div
+                      key={comm.id}
+                      style={{
+                        padding: '10px 14px',
+                        borderRadius: '4px',
+                        border: isCustomer ? '1px solid var(--status-pending-border)' : '1px solid var(--border-subtle)',
+                        backgroundColor: isCustomer ? 'var(--status-pending-subtle)' : '#FFFFFF',
+                        alignSelf: isCustomer ? 'flex-start' : 'flex-end',
+                        maxWidth: '85%',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', marginBottom: '4px' }}>
+                        <span style={{ fontSize: '11.5px', fontWeight: 700, color: isCustomer ? 'var(--copper-700)' : 'var(--ink-900)' }}>
+                          {isCustomer ? `${quote?.customer?.name || 'Customer'} (Client)` : comm.authorType === 'MANAGER' ? 'Sales Manager' : 'Sales Representative'}
+                        </span>
+                        <span style={{ fontSize: '10.5px', color: 'var(--text-secondary)', fontVariantNumeric: 'tabular-nums' }}>
+                          {new Date(comm.createdAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                      <p style={{ fontSize: '12.5px', color: 'var(--ink-900)', margin: 0, lineHeight: '1.4' }}>
+                        {comm.comment}
+                      </p>
+                      {comm.counterDiscountPercent && (
+                        <div style={{ marginTop: '6px' }}>
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              fontSize: '10.5px',
+                              fontWeight: 700,
+                              color: 'var(--status-rejected)',
+                              backgroundColor: 'var(--status-rejected-subtle)',
+                              border: '1px solid var(--status-rejected-border)',
+                              padding: '2px 6px',
+                              borderRadius: '3px',
+                            }}
+                          >
+                            Requested Counter Discount: {Number(comm.counterDiscountPercent)}%
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })
+              )}
+            </div>
+
+            {/* Staff Reply Box */}
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', borderTop: '1px solid var(--border-subtle)', paddingTop: '12px' }}>
+              <input
+                type="text"
+                placeholder={`Reply to ${quote?.customer?.name || 'customer'}...`}
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    handleSendReply()
+                  }
+                }}
+                style={{
+                  flex: 1,
+                  padding: '7px 12px',
+                  borderRadius: '4px',
+                  border: '1px solid var(--border-subtle)',
+                  fontSize: '12.5px',
+                  outline: 'none',
+                }}
+              />
+              <Button variant="primary" size="sm" onClick={handleSendReply} isLoading={isSendingReply} disabled={!replyText.trim()}>
+                <Send size={12} />
+                Send Reply
+              </Button>
+            </div>
+          </Card>
 
           {/* Action Bar (Submit for Approval or Review in Approvals) */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
